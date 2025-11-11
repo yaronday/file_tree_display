@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from pytest import MonkeyPatch
 
-from src.file_tree_display import FileTreeDisplay
+from file_tree_display.ftd import FileTreeDisplay
 
 
 @pytest.fixture
