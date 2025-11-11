@@ -185,16 +185,6 @@ ftd.printout = True
 ftd.file_tree_display()
 ```
 
-
-#### Error Handling
-
-The module raises well-defined exceptions for common issues:
-
-- `NotADirectoryError` when the path is not a directory
-- `PermissionError` for unreadable directories or write-protected files
-- `OSError` for general I/O or write failures
-
-
 ## FTD CLI — File Tree Display
 
 The **FTD CLI** (`ftd`) is a lightweight, configurable command-line tool for displaying or exporting a formatted file tree of a given directory.  
