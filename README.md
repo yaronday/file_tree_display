@@ -232,7 +232,7 @@ This displays the tree structure of the `src` directory using the *arrow* connec
 ### Command-Line Options
 
 | Option            | Alias | Type   | Description                                                | Default   |
-| ----------------- | ----- | ------ | ---------------------------------------------------------- | --------- |
+|-------------------|-------|--------|------------------------------------------------------------|-----------|
 | `--cfg`           | –     | `str`  | Path to a JSON configuration file.                         | –         |
 | `--root-dir`      | `-r`  | `str`  | Root directory to display.                                 | –         |
 | `--filepath`      | `-o`  | `str`  | Output file path for exported tree.                        | –         |
