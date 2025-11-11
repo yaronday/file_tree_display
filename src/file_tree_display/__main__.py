@@ -1,9 +1,8 @@
-"""CLI interface for FileTreeDisplay"""
+"""CLI interface for FileTreeDisplay."""
 
-import argparse
 import sys
-
-
+import argparse
+import ast
 from pathlib import Path
 from typing import Any
 
@@ -13,8 +12,21 @@ from ._constants import DEFAULT_SFX
 
 
 def parse() -> argparse.Namespace:
+    """
+    Parse and normalize CLI arguments for the FileTreeDisplay tool.
+
+    Supports space-separated or Python-style list inputs for:
+        --ignore-dirs, --ignore-files, --include-dirs, --include-files.
+
+    Returns:
+        argparse.Namespace: Parsed and normalized arguments ready for use.
+    """
     parser = argparse.ArgumentParser(
-        description='Display or export a formatted file tree of a directory.',
+        description=(
+            'CLI tool for displaying a filtered file tree.\n'
+            'Each of the ignore/include options supports either space-separated '
+            'or Python-style list input.'
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -51,7 +63,10 @@ def parse() -> argparse.Namespace:
         help='List files before directories.',
     )
     parser.add_argument(
-        '--skip-sorting', action='store_true', default=False, help='Disable sorting.'
+        '--skip-sorting',
+        action='store_true',
+        default=False,
+        help='Disable sorting.',
     )
     parser.add_argument(
         '--sort-key',
@@ -60,10 +75,16 @@ def parse() -> argparse.Namespace:
         help='Sort key for files (custom sort available only in Python API).',
     )
     parser.add_argument(
-        '--reverse', action='store_true', default=False, help='Reverse sort order.'
+        '--reverse',
+        action='store_true',
+        default=False,
+        help='Reverse sort order.',
     )
     parser.add_argument(
-        '--no-save', action='store_true', default=False, help='Do not save to file.'
+        '--no-save',
+        action='store_true',
+        default=False,
+        help='Do not save to file.',
     )
     parser.add_argument(
         '--printout',
@@ -73,16 +94,58 @@ def parse() -> argparse.Namespace:
         help='Print tree to stdout.',
     )
     parser.add_argument(
-        '--version', '-v', action='version', version=f'{FileTreeDisplay.get_version()}'
+        '--version',
+        '-v',
+        action='version',
+        version=f'{FileTreeDisplay.get_version()}',
     )
-    return parser.parse_args()
+
+    def normalize_list(argval: list[str] | None) -> list[str] | None:
+        """
+        Normalize CLI list-like arguments.
+
+        Supports both:
+          - space-separated inputs: e.g. --ignore-dirs .git .idea
+          - single Python-style list string: e.g. --ignore-dirs "['.git', '.idea']"
+
+        Returns:
+            list[str] | None: A clean list of strings or None if empty.
+        Raises:
+            ValueError: If a malformed Python-style list string is detected.
+        """
+        if not argval:
+            return None
+        if len(argval) == 1 and argval[0].startswith('['):
+            try:
+                return ast.literal_eval(argval[0])
+            except (ValueError, SyntaxError):
+                raise ValueError(f'Invalid list syntax: {argval[0]}')
+        return argval
+
+    args = parser.parse_args()
+
+    for key in ('ignore_dirs', 'ignore_files', 'include_dirs', 'include_files'):
+        setattr(args, key, normalize_list(getattr(args, key)))
+
+    return args
 
 
 def merge_config(
-    cli_args: argparse.Namespace, cfg_dict: dict[str, Any]
+    cli_args: argparse.Namespace, cfg_dict: dict[str, Any] | None
 ) -> dict[str, Any]:
-    """Merge CLI args and config file into a unified options dict."""
-    merged = {**cfg_dict}
+    """
+    Merge CLI arguments with an optional configuration file.
+
+    CLI options always take precedence over configuration file values.
+
+    Args:
+        cli_args: Parsed CLI arguments.
+        cfg_dict: Dictionary loaded from a JSON config file, may be None.
+
+    Returns:
+        dict[str, Any]: Unified configuration dictionary.
+    """
+    merged = dict(cfg_dict or {})
     for k, v in vars(cli_args).items():
         if v is not None and k != 'cfg':
             merged[k] = v
@@ -90,6 +153,11 @@ def merge_config(
 
 
 def main() -> None:
+    """Entry point for the FileTreeDisplay CLI.
+
+    Loads configuration, validates input, merges CLI options,
+    and executes file tree generation with appropriate output behavior.
+    """
     args = parse()
     cfg_dict = load_cfg_file(args.cfg)
     opts = merge_config(args, cfg_dict)
@@ -99,7 +167,7 @@ def main() -> None:
         sys.exit(f"Error: root directory '{root_dir}' does not exist.")
 
     filepath = opts.get('filepath')
-    if not filepath and not opts.get('no-save'):
+    if not filepath and not opts.get('no_save'):
         filepath = str(root_dir.with_name(f'{root_dir.name}{DEFAULT_SFX}'))
 
     ftd = FileTreeDisplay(
