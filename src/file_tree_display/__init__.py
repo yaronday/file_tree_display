@@ -11,4 +11,3 @@ from ._constants import PKG_NAME
 filetree_display = FileTreeDisplay(root_dir=str(Path.cwd()))
 
 __version__ = version(PKG_NAME)
-

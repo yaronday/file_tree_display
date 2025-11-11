@@ -177,3 +177,5 @@ cython_debug/
 /src/*/*.log
 
 update_package.py
+
+*_bkp.py

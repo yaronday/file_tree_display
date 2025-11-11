@@ -55,9 +55,9 @@ def parse() -> argparse.Namespace:
     )
     parser.add_argument(
         '--sort-key',
-        choices=['natural', 'lex', 'custom'],
+        choices=['natural', 'lex'],
         default='natural',
-        help='Sorting mode.',
+        help='Sort key for files (custom sort available only in Python API).',
     )
     parser.add_argument(
         '--reverse', action='store_true', default=False, help='Reverse sort order.'
