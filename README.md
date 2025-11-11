@@ -204,12 +204,12 @@ It’s designed for flexibility, allowing users to control inclusion/exclusion r
 
 ### Features
 
-* 📂 Generate a clean, formatted file tree of any directory
-* 🎨 Choose from multiple connector styles (`classic`, `dash`, `arrow`, `plus`)
-* ⚙️ Fine-grained control over included/excluded files and directories
-* 🔠 Flexible sorting modes (`natural`, `lex`, or `custom`)
-* 🧾 Optionally export the tree to a file or print directly to stdout
-* 🧱 Supports configuration via JSON config file
+* Generate a clean, formatted file tree of any directory
+* Choose from multiple connector styles (`classic`, `dash`, `arrow`, `plus`)
+* Fine-grained control over included/excluded files and directories
+* Flexible sorting modes (`natural`, `lex`, or `custom`)
+* Optionally export the tree to a file or print directly to stdout
+* Supports configuration via JSON config file
 
 ---
 
