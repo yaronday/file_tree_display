@@ -1,6 +1,10 @@
 import pytest
+import json
+
 from pathlib import Path
 from file_tree_display.ftd import FileTreeDisplay
+
+import file_tree_display.__main__ as cli
 
 
 @pytest.fixture
@@ -20,3 +24,24 @@ def sample_dir(tmp_path: Path) -> Path:
 def ftd_mock(sample_dir: Path) -> FileTreeDisplay:
     """Provides a FileTreeDisplay instance with a temporary directory."""
     return FileTreeDisplay(root_dir=str(sample_dir))
+
+
+@pytest.fixture
+def cli_instance():
+    """Provides a fresh FileTreeCLI instance for testing."""
+    return cli.FileTreeCLI()
+
+
+@pytest.fixture
+def sample_cfg(tmp_path: Path, sample_dir: Path) -> Path:
+    """Creates a temporary JSON config file for CLI testing."""
+    cfg = {
+        'root_dir': str(sample_dir),
+        'indent': 4,
+        'style': 'arrow',
+        'ignore_dirs': "['.git', '.venv']",
+        'include_dirs': ['src'],
+    }
+    cfg_path = tmp_path / 'cfg.json'
+    cfg_path.write_text(json.dumps(cfg))
+    return cfg_path
