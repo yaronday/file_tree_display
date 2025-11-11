@@ -100,6 +100,11 @@ def parse() -> argparse.Namespace:
         version=f'{FileTreeDisplay.get_version()}',
     )
 
+    # store defaults before parsing
+    defaults = {k: v for k, v in vars(parser.parse_args([])).items() if k != 'cfg'}
+
+    args = parser.parse_args()
+
     def normalize_list(argval: list[str] | None) -> list[str] | None:
         """
         Normalize CLI list-like arguments.
@@ -122,33 +127,32 @@ def parse() -> argparse.Namespace:
                 raise ValueError(f'Invalid list syntax: {argval[0]}')
         return argval
 
-    args = parser.parse_args()
-
     for key in ('ignore_dirs', 'ignore_files', 'include_dirs', 'include_files'):
         setattr(args, key, normalize_list(getattr(args, key)))
 
+    setattr(args, '_defaults', defaults)
     return args
 
 
 def merge_config(
     cli_args: argparse.Namespace, cfg_dict: dict[str, Any] | None
 ) -> dict[str, Any]:
+    """Merge CLI arguments with an optional configuration file.
+
+    CLI arguments explicitly provided by the user override config values.
+    CLI defaults do not override config values.
     """
-    Merge CLI arguments with an optional configuration file.
+    cfg_dict = cfg_dict or {}
+    defaults = getattr(cli_args, '_defaults', {})
+    cli_values = vars(cli_args)
 
-    CLI options always take precedence over configuration file values.
+    user_args = {
+        k: v
+        for k, v in cli_values.items()
+        if k not in ('cfg', '_defaults') and v != defaults.get(k)
+    }
 
-    Args:
-        cli_args: Parsed CLI arguments.
-        cfg_dict: Dictionary loaded from a JSON config file, may be None.
-
-    Returns:
-        dict[str, Any]: Unified configuration dictionary.
-    """
-    merged = dict(cfg_dict or {})
-    for k, v in vars(cli_args).items():
-        if v is not None and k != 'cfg':
-            merged[k] = v
+    merged = {**cfg_dict, **user_args}
     return merged
 
 
