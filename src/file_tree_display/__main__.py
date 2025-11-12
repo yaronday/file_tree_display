@@ -94,10 +94,10 @@ class FileTreeCLI:
         cfg_dict = cfg_dict or {}
         defaults = getattr(cli_args, '_defaults', {})
         cli_values = vars(cli_args)
+        normalize_list = self.normalize_list
 
         cfg_norm = {
-            k: (self.normalize_list(v) if k in LIST_KEYS else v)
-            for k, v in cfg_dict.items()
+            k: (normalize_list(v) if k in LIST_KEYS else v) for k, v in cfg_dict.items()
         }
 
         # detect explicit CLI args (different from defaults)
@@ -112,7 +112,7 @@ class FileTreeCLI:
         for key, value in user_args.items():
             if key in LIST_KEYS:
                 cfg_list = cfg_norm.get(key) or []
-                cli_list = self.normalize_list(value) or []
+                cli_list = normalize_list(value) or []
                 merged[key] = list(
                     dict.fromkeys(cfg_list + cli_list)
                 )  # merge, deduplicate
@@ -121,7 +121,7 @@ class FileTreeCLI:
 
         # normalize again in case config-only fields were unlisted
         for key in LIST_KEYS:
-            merged[key] = self.normalize_list(merged.get(key))
+            merged[key] = normalize_list(merged.get(key))
 
         return merged
 

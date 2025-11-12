@@ -15,6 +15,8 @@ logging.basicConfig(
 )
 
 ITER = 20
+TIMEOUT = 10
+PER_ITER = True
 
 root = r'c:/HugeFolder'  # a directory that contains many files and subdirectories
 target_path = r'YourTargetPath'
@@ -22,7 +24,7 @@ target_path = r'YourTargetPath'
 timer.update({'precision': 3})
 
 
-@timer.timeit(iterations=ITER, timeout=10, per_iteration=True)
+@timer.timeit(iterations=ITER, timeout=TIMEOUT, per_iteration=PER_ITER)
 def ftd_run():
     filename = 'ftd_files_first.txt'
     filepath = str(Path(target_path, filename))
@@ -36,7 +38,7 @@ def ftd_run():
     return ftd.file_tree_display()
 
 
-@timer.timeit(iterations=ITER, timeout=10, per_iteration=True)
+@timer.timeit(ITER, TIMEOUT, PER_ITER)
 def win_tree_cmd():
     filename = 'wintree_w_files.txt'
     filepath = str(Path(target_path, filename))

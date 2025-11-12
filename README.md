@@ -295,17 +295,39 @@ ftd -r ./data --sort-key lex --reverse --indent 4
 
 ---
 
-### 🧾 Output Example
+### Output Example
 
 ```text
-src
-├── main.py
-├── utils
-│   ├── helpers.py
-│   └── validators.py
-└── tests
-    ├── test_main.py
-    └── test_utils.py
+nano_dev_utils/
+├── src/
+│ └── nano_dev_utils/
+│   ├── __init__.py
+│   ├── __version__.py
+│   ├── _constants.py
+│   ├── common.py
+│   ├── dynamic_importer.py
+│   ├── release_ports.py
+│   └── timers.py
+├── tests/
+│ ├── test_timers/
+│ │ ├── __init__.py
+│ │ ├── conftest.py
+│ │ ├── test_duration_formatter.py
+│ │ ├── test_timer.py
+│ │ └── test_timers_async.py
+│ ├── __init__.py
+│ ├── test_common.py
+│ ├── test_dynamic_importer.py
+│ └── test_release_ports.py
+├── .gitignore
+├── .pre-commit-config.yaml
+├── LICENSE
+├── pyproject.toml
+├── README.md
+├── ruff.toml
+├── update_package.py
+└── uv.lock
+Scanned 4 subfolders and 24 files.
 ```
 
 ---

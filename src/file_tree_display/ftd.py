@@ -14,6 +14,8 @@ from ._constants import PKG_NAME
 
 _NUM_SPLIT = re.compile(r'(\d+)').split
 
+_FOLDER_MARKER = '/'
+
 
 class FileTreeDisplay:
     """Generate and display a visual file tree of a directory.
@@ -44,6 +46,7 @@ class FileTreeDisplay:
         'pb',
         'dir_filter',
         'file_filter',
+        'entry_count'
     )
 
     def __init__(
@@ -63,6 +66,7 @@ class FileTreeDisplay:
         custom_sort: Callable[[str], Any] | None = None,
         save2file: bool = True,
         printout: bool = False,
+        entry_count: bool = True,
     ) -> None:
         """Initialize the FileTreeDisplay instance.
 
@@ -98,6 +102,7 @@ class FileTreeDisplay:
         self.custom_sort = custom_sort
         self.save2file = save2file
         self.printout = printout
+        self.entry_count = entry_count
 
         self.style_dict: dict = {
             'classic': self.connector_styler('├── ', '└── '),
@@ -205,14 +210,15 @@ class FileTreeDisplay:
         if self.printout:
             print(tree_info)
 
-        self.get_num_of_entries(tree_info)
+        if self.entry_count:
+            self.get_num_of_entries(tree_info)
 
         return tree_info
 
     def get_tree_info(self, iterator: Generator[str, None, None]) -> str:
         buf = io.StringIO()
         write = buf.write
-        write(f'{self.root_path.name}/\n')
+        write(f'{self.root_path.name}{_FOLDER_MARKER}\n')
         buf.writelines(f'{line}\n' for line in iterator)
         out = buf.getvalue()
         return out[:-1] if out.endswith('\n') else out
@@ -292,7 +298,7 @@ class FileTreeDisplay:
         for idx, (name, path, is_dir) in enumerate(combined):
             is_last = idx == last_index
             connector = end if is_last else branch
-            formatted_name = f'{name}/' if is_dir else name
+            formatted_name = f'{name}{_FOLDER_MARKER}' if is_dir else name
             yield f'{prefix}{connector}{formatted_name}'
             extension = space if is_last else vertical
 
@@ -319,7 +325,9 @@ class FileTreeDisplay:
         }
 
     @staticmethod
-    def get_num_of_entries(tree_info: str) -> None:
-        num_of_folders = tree_info.count('/') - 1
-        num_of_files = tree_info.count('\n') - num_of_folders
-        print(f'Scanned {num_of_folders} folders and {num_of_files} files.')
+    def get_num_of_entries(tree_info: str) -> tuple[int, int]:
+        """counter for subdirectories and files - tailored for this module's format"""
+        m_subfolders = tree_info.count(_FOLDER_MARKER) - 1
+        n_files = tree_info.count('\n') - m_subfolders
+        print(f'Scanned {m_subfolders} subfolders and {n_files} files.')
+        return m_subfolders, n_files
