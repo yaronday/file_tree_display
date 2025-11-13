@@ -66,6 +66,12 @@ class FileTreeCLI:
         self.parser.add_argument('--no-save', action='store_true', default=False)
         self.parser.add_argument('--printout', '-p', action='store_true', default=False)
         self.parser.add_argument(
+            '--entry-count',
+            action='store_true',
+            default=False,
+            help='Show number of scanned subfolders and files',
+        )
+        self.parser.add_argument(
             '--version',
             '-v',
             action='version',
@@ -178,6 +184,7 @@ def main() -> None:
         reverse=bool(opts.get('reverse', False)),
         save2file=not opts.get('no_save', False),
         printout=opts.get('printout', False),
+        entry_count=bool(opts.get('entry_count', False)),
     )
 
     try:

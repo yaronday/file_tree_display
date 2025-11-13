@@ -46,7 +46,7 @@ class FileTreeDisplay:
         'pb',
         'dir_filter',
         'file_filter',
-        'entry_count'
+        'entry_count',
     )
 
     def __init__(
@@ -66,7 +66,7 @@ class FileTreeDisplay:
         custom_sort: Callable[[str], Any] | None = None,
         save2file: bool = True,
         printout: bool = False,
-        entry_count: bool = True,
+        entry_count: bool = False,
     ) -> None:
         """Initialize the FileTreeDisplay instance.
 

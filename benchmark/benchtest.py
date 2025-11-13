@@ -34,7 +34,6 @@ def ftd_run():
         filepath=filepath,
         save2file=True,
         files_first=True,  # default for 'Tree /F'
-        entry_count=False
     )
     return ftd.file_tree_display()
 
