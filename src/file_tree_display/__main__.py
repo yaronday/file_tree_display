@@ -56,15 +56,37 @@ class FileTreeCLI:
             '--indent', '-i', type=int, default=2, help='Indent width per level.'
         )
         self.parser.add_argument(
-            '--files-first', '-f', action='store_true', default=False
+            '--files-first',
+            '-f',
+            action='store_true',
+            default=False,
+            help='Determines whether to list files first.',
         )
-        self.parser.add_argument('--skip-sorting', action='store_true', default=False)
         self.parser.add_argument(
-            '--sort-key', choices=['natural', 'lex'], default='natural'
+            '--skip-sorting',
+            action='store_true',
+            default=False,
+            help='Skip sorting directly, even if configured.',
         )
-        self.parser.add_argument('--reverse', action='store_true', default=False)
-        self.parser.add_argument('--no-save', action='store_true', default=False)
-        self.parser.add_argument('--printout', '-p', action='store_true', default=False)
+        self.parser.add_argument(
+            '--sort-key',
+            choices=['natural', 'lex'],
+            default='natural',
+            help='Sort key function name',
+        )
+        self.parser.add_argument(
+            '--reverse', action='store_true', default=False, help='reversed sort'
+        )
+        self.parser.add_argument(
+            '--no-save', action='store_true', default=False, help='skip saving to file'
+        )
+        self.parser.add_argument(
+            '--printout',
+            '-p',
+            action='store_true',
+            default=False,
+            help='print file tree info',
+        )
         self.parser.add_argument(
             '--entry-count',
             action='store_true',
