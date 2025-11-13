@@ -275,7 +275,7 @@ Command-line arguments always **override** config file values.
 Display the current directory with default settings:
 
 ```bash
-ftd -r .
+ftd
 ```
 
 Display a tree with dashed connectors, ignoring test folders, and print it:
