@@ -4,11 +4,12 @@ import sys
 import ast
 import argparse
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Callable
 
 from .ftd import FileTreeDisplay
 from nano_dev_utils.common import load_cfg_file
 from ._constants import DEFAULT_SFX
+
 
 LIST_KEYS = {'ignore_dirs', 'ignore_files', 'include_dirs', 'include_files'}
 
@@ -185,6 +186,7 @@ class FileTreeCLI:
 
 
 def main() -> None:
+    ensure_utf8_stdout()
     cli = FileTreeCLI()
     args = cli.parse()
     cfg_dict = load_cfg_file(args.cfg)
@@ -221,6 +223,16 @@ def main() -> None:
         ftd.file_tree_display()
     except Exception as e:
         sys.exit(f'Error: {e}')
+
+
+def ensure_utf8_stdout() -> None:
+    """Best-effort attempt to force UTF-8 stdout on platforms that support it."""
+    reconfig: Optional[Callable[..., None]] = getattr(sys.stdout, "reconfigure", None)
+    if callable(reconfig):
+        try:
+            reconfig(encoding="utf-8")
+        except (LookupError, ValueError, OSError):
+            pass
 
 
 if __name__ == '__main__':

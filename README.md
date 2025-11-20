@@ -341,6 +341,8 @@ nano_dev_utils/
 Scanned 4 subfolders and 24 files.
 ```
 
+### [Unicode Output Notes](https://github.com/yaronday/file_tree_display/blob/master/docs/UNICODE_OUTPUT_NOTES.md)
+
 ---
 
 ***
