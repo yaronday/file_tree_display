@@ -125,7 +125,7 @@ Constructs and manages the visual representation of a folder structure of a path
 | `custom_sort`   | `Callable[[str], Any] / None`   | Custom sort key function.                                                    |
 | `title`         | `str`                           | Custom title shown in the output.                                            |
 | `save2file`     | `bool`                          | Save file tree (folder structure) info into a file.                          |
-| `stream_output` | `bool`                          | Immediately print tree content without building a buffer.                    |
+| `stream_output` | `bool`                          | Stream print tree content without building a buffer.                         |
 | `printout`      | `bool`                          | Print the generated tree to stdout.                                          |
 | `entry_count`   | `bool`                          | Show number of scanned subfolders and files. Defaults to False.              |
 
@@ -284,6 +284,12 @@ Display a tree with dashed connectors, ignoring test folders, and print it:
 
 ```bash
 ftd -r ./src --ignore-dirs tests --style dash --printout
+```
+
+Streaming out tree content, skipping buffer filling, file creation and entries counting:
+
+```bash
+ftd -stream
 ```
 
 Export a formatted tree to a file:
