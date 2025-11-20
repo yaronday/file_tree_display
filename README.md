@@ -108,25 +108,26 @@ Constructs and manages the visual representation of a folder structure of a path
 
 **Initialization Parameters**
 
-| Parameter       | Type                            | Description                                                                   |
-|:----------------|:--------------------------------|:------------------------------------------------------------------------------|
-| `root_dir`      | `str`                           | Path to the directory to scan.                                                |
-| `filepath`      | `str / None`                    | Optional output destination for the saved file tree.                          |                                               
-| `ignore_dirs`   | `list[str] or set[str] or None` | Directory names or patterns to skip.                                          |                                                
-| `ignore_files`  | `list[str] or set[str] or None` | File names or patterns to skip.                                               |
-| `include_dirs`  | `list[str] or set[str] or None` | Only include specified folder names or patterns.                              |
-| `include_files` | `list[str] or set[str] or None` | Only include specified file names or patterns, '*.pdf' - only include pdfs.   |
-| `style`         | `str`                           | Characters used to mark hierarchy levels. Defaults to `'classic'`.            |
-| `indent`        | `int`                           | Number of style characters per level. Defaults `2`.                           |
-| `files_first`   | `bool`                          | Determines whether to list files first. Defaults to False.                    |
-| `skip_sorting`  | `bool`                          | Skip sorting directly, even if configured.                                    |
-| `sort_key_name` | `str`                           | Sort key func name. Natural, Lexicographic or custom. Defaults to 'natural'.  |
-| `reverse`       | `bool`                          | Reversed sorting order.                                                       |
-| `custom_sort`   | `Callable[[str], Any] / None`   | Custom sort key function.                                                     |
-| `title`         | `str`                           | Custom title shown in the output.                                             |
-| `save2file`     | `bool`                          | Save file tree (folder structure) info into a file.                           |
-| `printout`      | `bool`                          | Print the generated tree to stdout.                                           |
-| `entry_count`   | `bool`                          | Show number of scanned subfolders and files. Defaults to False.               |
+| Parameter       | Type                            | Description                                                                  |
+|:----------------|:--------------------------------|:-----------------------------------------------------------------------------|
+| `root_dir`      | `str`                           | Path to the directory to scan.                                               |
+| `filepath`      | `str / None`                    | Optional output destination for the saved file tree.                         |                                               
+| `ignore_dirs`   | `list[str] or set[str] or None` | Directory names or patterns to skip.                                         |                                                
+| `ignore_files`  | `list[str] or set[str] or None` | File names or patterns to skip.                                              |
+| `include_dirs`  | `list[str] or set[str] or None` | Only include specified folder names or patterns.                             |
+| `include_files` | `list[str] or set[str] or None` | Only include specified file names or patterns, '*.pdf' - only include pdfs.  |
+| `style`         | `str`                           | Characters used to mark hierarchy levels. Defaults to `'classic'`.           |
+| `indent`        | `int`                           | Number of style characters per level. Defaults `2`.                          |
+| `files_first`   | `bool`                          | Determines whether to list files first. Defaults to False.                   |
+| `skip_sorting`  | `bool`                          | Skip sorting directly, even if configured.                                   |
+| `sort_key_name` | `str`                           | Sort key func name. Natural, Lexicographic or custom. Defaults to 'natural'. |
+| `reverse`       | `bool`                          | Reversed sorting order.                                                      |
+| `custom_sort`   | `Callable[[str], Any] / None`   | Custom sort key function.                                                    |
+| `title`         | `str`                           | Custom title shown in the output.                                            |
+| `save2file`     | `bool`                          | Save file tree (folder structure) info into a file.                          |
+| `stream_output` | `bool`                          | Stream print tree content without building a buffer.                         |
+| `printout`      | `bool`                          | Print the generated tree to stdout.                                          |
+| `entry_count`   | `bool`                          | Show number of scanned subfolders and files. Defaults to False.              |
 
 #### Core Methods
 
@@ -222,25 +223,26 @@ This displays the tree structure of the `src` directory using the *arrow* connec
 
 ### Command-Line Options
 
-| Option            | Alias | Type   | Description                                                | Default   |
-|-------------------|-------|--------|------------------------------------------------------------|-----------|
-| `--cfg`           | –     | `str`  | Path to a JSON configuration file.                         | –         |
-| `--root-dir`      | `-r`  | `str`  | Root directory to display.                                 | –         |
-| `--filepath`      | `-o`  | `str`  | Output file path for exported tree.                        | –         |
-| `--ignore-dirs`   | –     | `str…` | Directories to exclude from the tree.                      | –         |
-| `--ignore-files`  | –     | `str…` | Files to exclude from the tree.                            | –         |
-| `--include-dirs`  | –     | `str…` | Directories to explicitly include.                         | –         |
-| `--include-files` | –     | `str…` | Files to explicitly include.                               | –         |
-| `--style`         | `-s`  | `str`  | Tree connector style (`classic`, `dash`, `arrow`, `plus`). | `classic` |
-| `--indent`        | `-i`  | `int`  | Indent width (spaces) per directory level.                 | `2`       |
-| `--files-first`   | `-f`  | flag   | List files before directories.                             | `False`   |
-| `--skip-sorting`  | –     | flag   | Disable sorting altogether.                                | `False`   |
-| `--sort-key`      | –     | `str`  | Sorting key: `natural` or `lex`.                           | `natural` |
-| `--reverse`       | –     | flag   | Reverse the sort order.                                    | `False`   |
-| `--no-save`       | –     | flag   | Do not save output to file (useful with `--printout`).     | `False`   |
-| `--printout`      | `-p`  | flag   | Print the generated tree to stdout.                        | `False`   |
-| `--entry-count`   |       | flag   | Show number of scanned subfolders and files.               | `False`   |
-| `--version`       | `-v`  | flag   | Show the current version of FTD and exit.                  | –         |
+| Option            | Alias     | Type   | Description                                                | Default   |
+|-------------------|-----------|--------|------------------------------------------------------------|-----------|
+| `--cfg`           | –         | `str`  | Path to a JSON configuration file.                         | –         |
+| `--root-dir`      | `-r`      | `str`  | Root directory to display.                                 | –         |
+| `--filepath`      | `-o`      | `str`  | Output file path for exported tree.                        | –         |
+| `--ignore-dirs`   | –         | `str…` | Directories to exclude from the tree.                      | –         |
+| `--ignore-files`  | –         | `str…` | Files to exclude from the tree.                            | –         |
+| `--include-dirs`  | –         | `str…` | Directories to explicitly include.                         | –         |
+| `--include-files` | –         | `str…` | Files to explicitly include.                               | –         |
+| `--style`         | `-s`      | `str`  | Tree connector style (`classic`, `dash`, `arrow`, `plus`). | `classic` |
+| `--indent`        | `-i`      | `int`  | Indent width (spaces) per directory level.                 | `2`       |
+| `--files-first`   | `-f`      | flag   | List files before directories.                             | `False`   |
+| `--skip-sorting`  | –         | flag   | Disable sorting altogether.                                | `False`   |
+| `--sort-key`      | –         | `str`  | Sorting key: `natural` or `lex`.                           | `natural` |
+| `--reverse`       | –         | flag   | Reverse the sort order.                                    | `False`   |
+| `--no-save`       | –         | flag   | Do not save output to file.                                | `False`   |
+| `--stream-output` | `-stream` | flag   | Stream tree content without building a buffer.             | `False`   |
+| `--printout`      | `-p`      | flag   | Print the generated tree to stdout.                        | `False`   |
+| `--entry-count`   |           | flag   | Show number of scanned subfolders and files.               | `False`   |
+| `--version`       | `-v`      | flag   | Show the current version of FTD and exit.                  | –         |
 
 ---
 
@@ -282,6 +284,12 @@ Display a tree with dashed connectors, ignoring test folders, and print it:
 
 ```bash
 ftd -r ./src --ignore-dirs tests --style dash --printout
+```
+
+Streaming out tree content, skipping buffer filling, file creation and entries counting:
+
+```bash
+ftd -stream
 ```
 
 Export a formatted tree to a file:
@@ -332,6 +340,8 @@ nano_dev_utils/
 └── uv.lock
 Scanned 4 subfolders and 24 files.
 ```
+
+### [Unicode Output Notes](https://github.com/yaronday/file_tree_display/blob/master/docs/UNICODE_OUTPUT_NOTES.md)
 
 ---
 

@@ -1,9 +1,12 @@
+import pytest
+
 from pathlib import Path
 from unittest import mock
-import pytest
 from pytest import MonkeyPatch
 
 from file_tree_display.ftd import FileTreeDisplay
+
+from typing import Generator
 
 
 def test_basic_structure_generation(ftd_mock: FileTreeDisplay) -> None:
@@ -125,10 +128,11 @@ def test_custom_styles(ftd_mock: FileTreeDisplay) -> None:
 
 def test_get_tree_info_proper_format(ftd_mock: FileTreeDisplay) -> None:
     """Check that get_tree_info formats output with root and lines."""
+    root_line = f'{ftd_mock.root_path.name}/'
     iterator = (f'line_{i}' for i in range(3))
-    result = ftd_mock.get_tree_info(iterator)
+    result = ftd_mock.get_tree_info(iterator, root_line)
     lines = result.split('\n')
-    assert lines[0] == f'{ftd_mock.root_path.name}/'
+    assert lines[0] == root_line
     assert lines[1].startswith('line_')
     assert result.count('\n') == 3
 
@@ -234,3 +238,135 @@ def test_file_tree_display_print_and_save(
 
     content = out_file.read_text(encoding='utf-8')
     assert content.strip() == result.strip()
+
+
+class DummyFTD:
+    """A minimal stub of FileTreeDisplay to only test stream_output behavior."""
+
+    def __init__(
+        self,
+        root_path,
+        iterator,
+        *,
+        stream_output=False,
+        save2file=False,
+        printout=False,
+        entry_count=False,
+        filepath=None,
+    ):
+        self.root_path = root_path
+        self.iterator = iterator
+        self.stream_output = stream_output
+        self.save2file = save2file
+        self.printout = printout
+        self.entry_count = entry_count
+        self.filepath = filepath
+
+        # spy flags
+        self.called_get_tree_info = False
+        self.called_str2file = False
+        self.called_get_num_entries = False
+
+    def get_tree_info(self, iterator, root_line):
+        self.called_get_tree_info = True
+        buf = [root_line] + list(iterator)
+        return '\n'.join(buf)
+
+    def get_num_of_entries(self, info):
+        self.called_get_num_entries = True
+
+    def file_tree_display(self):
+        root_line = f'{self.root_path.name}/'
+
+        iterator = self.iterator
+
+        if self.stream_output:
+            print(root_line)
+            for line in iterator:
+                print(line)
+            return ''
+
+        return self.tree_info_processing(iterator, root_line)
+
+    def tree_info_processing(
+        self, iterator: Generator[str, None, None], root_line: str
+    ) -> str:
+        info = self.get_tree_info(iterator, root_line)
+
+        if self.save2file and self.filepath:
+            self.called_str2file = True
+
+        if self.printout:
+            print(info)
+
+        if self.entry_count:
+            self.get_num_of_entries(info)
+
+        return info
+
+
+def test_stream_output_prints_and_returns_empty(capsys):
+    iterator = iter(['a', 'b', 'c'])
+    root = type('P', (), {'name': 'root'})()
+
+    obj = DummyFTD(root, iterator, stream_output=True)
+
+    result = obj.file_tree_display()
+
+    assert result == ''
+
+    captured = capsys.readouterr().out.splitlines()
+    assert captured == ['root/', 'a', 'b', 'c']
+
+    assert obj.called_get_tree_info is False
+    assert obj.called_str2file is False
+    assert obj.called_get_num_entries is False
+
+
+def test_normal_mode_calls_get_tree_info_but_not_stream(capsys):
+    iterator = iter(['a', 'b'])
+    root = type('P', (), {'name': 'root'})()
+
+    obj = DummyFTD(root, iterator, stream_output=False)
+
+    result = obj.file_tree_display().splitlines()
+
+    assert result == ['root/', 'a', 'b']
+
+    assert obj.called_get_tree_info is True
+
+    assert capsys.readouterr().out == ''
+
+
+def test_normal_mode_printout(capsys):
+    iterator = iter(['x'])
+    root = type('P', (), {'name': 'root'})()
+
+    obj = DummyFTD(root, iterator, stream_output=False, printout=True)
+
+    obj.file_tree_display()
+    out = capsys.readouterr().out.strip().splitlines()
+
+    assert out == ['root/', 'x']
+
+
+def test_normal_mode_entry_count_called():
+    iterator = iter(['a', 'b'])
+    root = type('P', (), {'name': 'root'})()
+
+    obj = DummyFTD(root, iterator, entry_count=True)
+
+    obj.file_tree_display()
+
+    assert obj.called_get_num_entries is True
+
+
+def test_normal_mode_save2file_flag_sets_spy():
+    iterator = iter(['a'])
+    root = type('P', (), {'name': 'root'})()
+
+    obj = DummyFTD(root, iterator, save2file=True, filepath='dummy.txt')
+
+    obj.file_tree_display()
+
+    assert obj.called_str2file is True

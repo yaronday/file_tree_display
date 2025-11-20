@@ -4,11 +4,12 @@ import sys
 import ast
 import argparse
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Callable
 
 from .ftd import FileTreeDisplay
 from nano_dev_utils.common import load_cfg_file
 from ._constants import DEFAULT_SFX
+
 
 LIST_KEYS = {'ignore_dirs', 'ignore_files', 'include_dirs', 'include_files'}
 
@@ -79,6 +80,13 @@ class FileTreeCLI:
         )
         self.parser.add_argument(
             '--no-save', action='store_true', default=False, help='skip saving to file'
+        )
+        self.parser.add_argument(
+            '--stream-output',
+            '-stream',
+            action='store_true',
+            default=False,
+            help='Immediately print tree content without building a buffer.',
         )
         self.parser.add_argument(
             '--printout',
@@ -178,6 +186,7 @@ class FileTreeCLI:
 
 
 def main() -> None:
+    ensure_utf8_stdout()
     cli = FileTreeCLI()
     args = cli.parse()
     cfg_dict = load_cfg_file(args.cfg)
@@ -205,6 +214,7 @@ def main() -> None:
         sort_key_name=opts.get('sort_key', 'natural'),
         reverse=bool(opts.get('reverse', False)),
         save2file=not opts.get('no_save', False),
+        stream_output=opts.get('stream_output', False),
         printout=opts.get('printout', False),
         entry_count=bool(opts.get('entry_count', False)),
     )
@@ -213,6 +223,16 @@ def main() -> None:
         ftd.file_tree_display()
     except Exception as e:
         sys.exit(f'Error: {e}')
+
+
+def ensure_utf8_stdout() -> None:
+    """Best-effort attempt to force UTF-8 stdout on platforms that support it."""
+    reconfig: Optional[Callable[..., None]] = getattr(sys.stdout, "reconfigure", None)
+    if callable(reconfig):
+        try:
+            reconfig(encoding="utf-8")
+        except (LookupError, ValueError, OSError):
+            pass
 
 
 if __name__ == '__main__':

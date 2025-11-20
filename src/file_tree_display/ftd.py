@@ -40,6 +40,7 @@ class FileTreeDisplay:
         'reverse',
         'custom_sort',
         'save2file',
+        'stream_output',
         'printout',
         'style_dict',
         'sort_keys',
@@ -65,6 +66,7 @@ class FileTreeDisplay:
         reverse: bool = False,
         custom_sort: Callable[[str], Any] | None = None,
         save2file: bool = True,
+        stream_output: bool = False,
         printout: bool = False,
         entry_count: bool = False,
     ) -> None:
@@ -101,6 +103,7 @@ class FileTreeDisplay:
         self.reverse = reverse
         self.custom_sort = custom_sort
         self.save2file = save2file
+        self.stream_output = stream_output
         self.printout = printout
         self.entry_count = entry_count
 
@@ -202,7 +205,15 @@ class FileTreeDisplay:
             indent=indent,
         )
 
-        tree_info = self.get_tree_info(iterator)
+        root_line = f'{self.root_path.name}{_FOLDER_MARKER}'
+
+        if self.stream_output:
+            print(root_line)
+            for line in iterator:
+                print(line)
+            return ''
+
+        tree_info = self.get_tree_info(iterator, root_line)
 
         if self.save2file and filepath:
             str2file(tree_info, filepath)
@@ -215,10 +226,19 @@ class FileTreeDisplay:
 
         return tree_info
 
-    def get_tree_info(self, iterator: Generator[str, None, None]) -> str:
+    @staticmethod
+    def get_tree_info(iterator: Generator[str, None, None], root_line: str) -> str:
+        """Collect the directory-tree output from an iterator into a single CRLF-delimited string.
+
+        Args:
+            iterator: A generator producing tree lines (without trailing newline).
+            root_line: The tree's root entry, preformatted.
+
+        Returns:
+            str: A single CRLF-delimited string representing the directory tree.
+        """
         buf = io.StringIO()
-        write = buf.write
-        write(f'{self.root_path.name}{_FOLDER_MARKER}\n')
+        buf.write(f'{root_line}\n')
         buf.writelines(f'{line}\n' for line in iterator)
         out = buf.getvalue()
         return out[:-1] if out.endswith('\n') else out
