@@ -81,6 +81,13 @@ class FileTreeCLI:
             '--no-save', action='store_true', default=False, help='skip saving to file'
         )
         self.parser.add_argument(
+            '--stream-output',
+            '-stream',
+            action='store_true',
+            default=False,
+            help='Immediately print tree content without building a buffer.',
+        )
+        self.parser.add_argument(
             '--printout',
             '-p',
             action='store_true',
@@ -205,6 +212,7 @@ def main() -> None:
         sort_key_name=opts.get('sort_key', 'natural'),
         reverse=bool(opts.get('reverse', False)),
         save2file=not opts.get('no_save', False),
+        stream_output=opts.get('stream_output', False),
         printout=opts.get('printout', False),
         entry_count=bool(opts.get('entry_count', False)),
     )

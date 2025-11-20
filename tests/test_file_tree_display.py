@@ -125,10 +125,11 @@ def test_custom_styles(ftd_mock: FileTreeDisplay) -> None:
 
 def test_get_tree_info_proper_format(ftd_mock: FileTreeDisplay) -> None:
     """Check that get_tree_info formats output with root and lines."""
+    root_line = f'{ftd_mock.root_path.name}/'
     iterator = (f'line_{i}' for i in range(3))
-    result = ftd_mock.get_tree_info(iterator)
+    result = ftd_mock.get_tree_info(iterator, root_line)
     lines = result.split('\n')
-    assert lines[0] == f'{ftd_mock.root_path.name}/'
+    assert lines[0] == root_line
     assert lines[1].startswith('line_')
     assert result.count('\n') == 3
 
