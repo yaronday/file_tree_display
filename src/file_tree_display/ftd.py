@@ -187,7 +187,7 @@ class FileTreeDisplay:
         if not self.root_path.is_dir():
             raise NotADirectoryError(f"The path '{root_path_str}' is not a directory.")
 
-        if self.save2file and filepath:  # Permissions check in advance!
+        if not self.stream_output and self.save2file and filepath:  # Permissions check in advance!
             str2file('', filepath, 'a')
 
         style = self.format_style()
