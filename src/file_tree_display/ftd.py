@@ -194,7 +194,6 @@ class FileTreeDisplay:
         sort_key = None if self.skip_sorting else self._resolve_sort_key()
         dir_filter, file_filter = self.dir_filter, self.file_filter
         files_first, reverse = self.files_first, self.reverse
-        indent = self.indent
 
         iterator = self._build_tree(
             root_path_str,
@@ -205,7 +204,6 @@ class FileTreeDisplay:
             dir_filter=dir_filter,
             file_filter=file_filter,
             reverse=reverse,
-            indent=indent,
         )
 
         root_line = f'{self.root_path.name}{_FOLDER_MARKER}'
@@ -257,15 +255,27 @@ class FileTreeDisplay:
         dir_filter: Callable[[str], bool],
         file_filter: Callable[[str], bool],
         reverse: bool,
-        indent: int,
     ) -> Generator[str, None, None]:
-        """Yields lines representing a formatted folder structure using a recursive DFS.
-        The internal recursive generator has runtime consts threaded through to avoid attrib. lookups.
+        """Yields formatted lines representing the directory tree rooted at dir_path using a recursive DFS.
+           Runtime constants are threaded through the generator to avoid repeated attribute lookups.
 
         Args:
-            dir_path (str): The directory path or disk drive currently being traversed.
-            prefix (str): Hierarchical prefix applied to each level.
-
+            dir_path (str):
+                The directory path currently being traversed.
+            prefix (str):
+                Text prefix applied to each entry for the current depth level.
+            style (dict):
+                Mapping containing tree connector glyphs (branch, end, vertical, space).
+            sort_key (Callable[[str], Any] | None):
+                Key function used for sorting directory and file names, or None to skip sorting.
+            files_first (bool):
+                If True, files are listed before directories; otherwise directories first.
+            dir_filter (Callable[[str], bool]):
+                Predicate determining whether a directory name should be included.
+            file_filter (Callable[[str], bool]):
+                Predicate determining whether a file name should be included.
+            reverse (bool):
+                Whether sorting should be in reverse order when sorting is enabled.
         Yields:
             str: A formatted text representation of the folder structure.
         """
@@ -335,7 +345,6 @@ class FileTreeDisplay:
                     dir_filter=dir_filter,
                     file_filter=file_filter,
                     reverse=reverse,
-                    indent=indent,
                 )
 
     def connector_styler(self, branch: str, end: str) -> dict:
