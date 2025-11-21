@@ -3,12 +3,14 @@
 import sys
 import ast
 import argparse
+
 from pathlib import Path
 from typing import Any, Optional, Callable
 
 from .ftd import FileTreeDisplay
-from nano_dev_utils.common import load_cfg_file
 from ._constants import DEFAULT_SFX
+
+from nano_dev_utils.common import load_cfg_file
 
 
 LIST_KEYS = {'ignore_dirs', 'ignore_files', 'include_dirs', 'include_files'}
@@ -86,7 +88,7 @@ class FileTreeCLI:
             '-stream',
             action='store_true',
             default=False,
-            help='Immediately print tree content without building a buffer.',
+            help='Stream tree content without building a buffer.',
         )
         self.parser.add_argument(
             '--printout',
@@ -227,10 +229,10 @@ def main() -> None:
 
 def ensure_utf8_stdout() -> None:
     """Best-effort attempt to force UTF-8 stdout on platforms that support it."""
-    reconfig: Optional[Callable[..., None]] = getattr(sys.stdout, "reconfigure", None)
+    reconfig: Optional[Callable[..., None]] = getattr(sys.stdout, 'reconfigure', None)
     if callable(reconfig):
         try:
-            reconfig(encoding="utf-8")
+            reconfig(encoding='utf-8')
         except (LookupError, ValueError, OSError):
             pass
 
