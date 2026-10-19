@@ -5,8 +5,7 @@ import re
 from collections.abc import Generator
 from itertools import chain
 from pathlib import Path
-from typing_extensions import Callable, Any
-from typing import Iterable
+from typing import Iterable, Callable, Any
 
 from importlib.metadata import version, PackageNotFoundError
 from nano_dev_utils.common import str2file, FilterSet, PredicateBuilder
@@ -319,7 +318,7 @@ class FileTreeDisplay:
             files.sort(key=sort_key, reverse=reverse)
 
         # Compute combined sequence without extra temporary tuples where possible
-        f_iter: Iterable[tuple[str, None, bool]] = ((f, None, False) for f in files)
+        f_iter: Iterable[tuple[str, str | None, bool]] = ((f, None, False) for f in files)
         d_iter: Iterable[tuple[str, str, bool]] = ((d[0], d[1], True) for d in dirs)
         seq: Iterable[tuple[str, str | None, bool]] = (
             chain(f_iter, d_iter) if files_first else chain(d_iter, f_iter)

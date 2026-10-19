@@ -30,6 +30,10 @@ ftd = "file_tree_display.__main__:main"
 license = { path = "LICENSE" }
 
 [dependency-groups]
+dev = [
+    "build>=1.3.0",
+    "twine>=7.0.0",
+]
 test = [
     "pytest>=8.2.0",
     "pytest-mock>=3.14.0",
