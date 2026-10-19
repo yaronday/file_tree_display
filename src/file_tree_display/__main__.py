@@ -22,9 +22,7 @@ class FileTreeCLI:
     def __init__(self) -> None:
         self.parser = argparse.ArgumentParser(
             description=(
-                'CLI tool for displaying a filtered file tree.\n'
-                'Each of the ignore/include options supports either space-separated '
-                'or Python-style list input.'
+                'file-tree-display - A utility for generating a visually structured directory tree.\n'
             ),
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
@@ -37,18 +35,26 @@ class FileTreeCLI:
             '--root-dir', '-r', type=str, help='Root directory to display.'
         )
         self.parser.add_argument('--filepath', '-o', type=str, help='Output file path.')
-        self.parser.add_argument(
-            '--ignore-dirs', nargs='*', default=None, help='Directories to ignore.'
+        filter_group = self.parser.add_argument_group(
+            "Filtering Options",
+            description=(
+                "Each of the ignore/include options supports either space-separated "
+                "or Python-style list input."
+            ),
         )
-        self.parser.add_argument(
-            '--ignore-files', nargs='*', default=None, help='Files to ignore.'
+        filter_group.add_argument(
+            "--ignore-dirs", nargs="*", default=None, help="Directories to ignore."
         )
-        self.parser.add_argument(
-            '--include-dirs', nargs='*', default=None, help='Directories to include.'
+        filter_group.add_argument(
+            "--ignore-files", nargs="*", default=None, help="Files to ignore."
         )
-        self.parser.add_argument(
-            '--include-files', nargs='*', default=None, help='Files to include.'
+        filter_group.add_argument(
+            "--include-dirs", nargs="*", default=None, help="Directories to include."
         )
+        filter_group.add_argument(
+            "--include-files", nargs="*", default=None, help="Files to include."
+        )
+
         self.parser.add_argument(
             '--style',
             '-s',
