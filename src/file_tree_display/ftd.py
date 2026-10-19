@@ -5,8 +5,7 @@ import re
 from collections.abc import Generator
 from itertools import chain
 from pathlib import Path
-from typing_extensions import Callable, Any
-from typing import Iterable
+from typing import Iterable, Callable, Any
 
 from importlib.metadata import version, PackageNotFoundError
 from nano_dev_utils.common import str2file, FilterSet, PredicateBuilder
