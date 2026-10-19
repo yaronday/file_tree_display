@@ -28,6 +28,7 @@ class FileTreeCLI:
         )
         self._add_arguments()
         self.defaults = None
+        self.parser.error = self.concise_error
 
     def _add_arguments(self) -> None:
         self.parser.add_argument('--cfg', type=str, help='Path to JSON config file.')
@@ -191,6 +192,14 @@ class FileTreeCLI:
         if isinstance(value, (list, tuple, set)):
             return list(value)
         return [str(value)]
+
+    def concise_error(self, message: str) -> None:
+        prog = self.parser.prog
+        sys.stderr.write(
+            f"{prog}: error: {message}\n\n"
+            f"Run '{prog} -h' for usage.\n"
+        )
+        sys.exit(2)
 
 
 def main() -> None:
