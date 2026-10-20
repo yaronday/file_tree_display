@@ -319,7 +319,7 @@ class FileTreeDisplay:
 
         # Compute combined sequence without extra temporary tuples where possible
         f_iter: Iterable[tuple[str, str | None, bool]] = ((f, None, False) for f in files)
-        d_iter: Iterable[tuple[str, str, bool]] = ((d[0], d[1], True) for d in dirs)
+        d_iter: Iterable[tuple[str, str | None, bool]] = ((d[0], d[1], True) for d in dirs)
         seq: Iterable[tuple[str, str | None, bool]] = (
             chain(f_iter, d_iter) if files_first else chain(d_iter, f_iter)
         )
