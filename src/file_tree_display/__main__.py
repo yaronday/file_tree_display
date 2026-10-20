@@ -243,10 +243,9 @@ def main() -> None:
 
 def ensure_utf8_stdout() -> None:
     """Best-effort attempt to force UTF-8 stdout on platforms that support it."""
-    reconfig: Optional[Callable[..., None]] = getattr(sys.stdout, 'reconfigure', None)
-    if callable(reconfig):
+    if sys.stdout is not None and hasattr(sys.stdout, 'reconfigure'):
         try:
-            reconfig(encoding='utf-8')
+            sys.stdout.reconfigure(encoding='utf-8')
         except (LookupError, ValueError, OSError):
             pass
 
