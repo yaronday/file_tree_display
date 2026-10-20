@@ -39,8 +39,7 @@ class FileTreeCLI:
         filter_group = self.parser.add_argument_group(
             "Filtering Options",
             description=(
-                "Each of the ignore/include options supports either space-separated "
-                "or Python-style list input."
+                "Supporting either space-separated or Python-style list inputs."
             ),
         )
         filter_group.add_argument(
