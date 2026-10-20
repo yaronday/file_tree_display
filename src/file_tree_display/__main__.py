@@ -5,7 +5,7 @@ import ast
 import argparse
 
 from pathlib import Path
-from typing import Any, Optional, Callable
+from typing import Any
 
 from .ftd import FileTreeDisplay
 from ._constants import DEFAULT_SFX
