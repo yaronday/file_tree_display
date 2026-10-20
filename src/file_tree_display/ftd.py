@@ -203,6 +203,7 @@ class FileTreeDisplay:
             dir_filter=dir_filter,
             file_filter=file_filter,
             reverse=reverse,
+            is_root=True
         )
 
         root_line = f'{self.root_path.name}{_FOLDER_MARKER}'
@@ -254,6 +255,7 @@ class FileTreeDisplay:
         dir_filter: Callable[[str], bool],
         file_filter: Callable[[str], bool],
         reverse: bool,
+        is_root: bool = False,
     ) -> Generator[str, None, None]:
         """Yields formatted lines representing the directory tree rooted at dir_path using a recursive DFS.
            Runtime constants are threaded through the generator to avoid repeated attribute lookups.
@@ -300,9 +302,15 @@ class FileTreeDisplay:
                         continue
 
                     if is_dir:
-                        if dir_filter(name):
+                        matched = dir_filter(name)
+                        if matched:
                             append_dir((name, entry.path))
+                            child_dir_filter = (lambda n: True) if self.include_dirs else dir_filter
+
                     else:
+                        # Skip root-level files if inclusion filters are active
+                        if self.include_dirs and is_root:
+                            continue
                         if file_filter(name):
                             append_file(name)
 
@@ -319,7 +327,7 @@ class FileTreeDisplay:
 
         # Compute combined sequence without extra temporary tuples where possible
         f_iter: Iterable[tuple[str, str | None, bool]] = ((f, None, False) for f in files)
-        d_iter: Iterable[tuple[str, str, bool]] = ((d[0], d[1], True) for d in dirs)
+        d_iter: Iterable[tuple[str, str | None, bool]] = ((d[0], d[1], True) for d in dirs)
         seq: Iterable[tuple[str, str | None, bool]] = (
             chain(f_iter, d_iter) if files_first else chain(d_iter, f_iter)
         )
@@ -341,9 +349,10 @@ class FileTreeDisplay:
                     style=style,
                     sort_key=sort_key,
                     files_first=files_first,
-                    dir_filter=dir_filter,
-                    file_filter=file_filter,
+                    dir_filter=child_dir_filter,
+                    file_filter=(lambda n: True) if self.include_dirs else file_filter, # Allow files inside target too
                     reverse=reverse,
+                    is_root=False, #  sub-dirs are never root
                 )
 
     def connector_styler(self, branch: str, end: str) -> dict:

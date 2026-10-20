@@ -5,7 +5,7 @@ import ast
 import argparse
 
 from pathlib import Path
-from typing import Any, Optional, Callable
+from typing import Any
 
 from .ftd import FileTreeDisplay
 from ._constants import DEFAULT_SFX
@@ -39,8 +39,7 @@ class FileTreeCLI:
         filter_group = self.parser.add_argument_group(
             "Filtering Options",
             description=(
-                "Each of the ignore/include options supports either space-separated "
-                "or Python-style list input."
+                "Supporting either space-separated or Python-style list inputs."
             ),
         )
         filter_group.add_argument(
@@ -215,7 +214,12 @@ def main() -> None:
 
     filepath = opts.get('filepath')
     if not filepath and not opts.get('no_save'):
-        filepath = str(root_dir.with_name(f'{root_dir.name}{DEFAULT_SFX}'))
+        if root_dir.name:
+            filepath = str(root_dir.with_name(f'{root_dir.name}{DEFAULT_SFX}'))
+        else:
+            # Handle drive roots like 'c:/' where name is ''
+            drive_letter = root_dir.drive.rstrip(':') or 'root'
+            filepath = str(root_dir / f'{drive_letter}{DEFAULT_SFX}')
 
     ftd = FileTreeDisplay(
         root_dir=str(root_dir),
@@ -244,10 +248,9 @@ def main() -> None:
 
 def ensure_utf8_stdout() -> None:
     """Best-effort attempt to force UTF-8 stdout on platforms that support it."""
-    reconfig: Optional[Callable[..., None]] = getattr(sys.stdout, 'reconfigure', None)
-    if callable(reconfig):
+    if sys.stdout is not None and hasattr(sys.stdout, 'reconfigure'):
         try:
-            reconfig(encoding='utf-8')
+            sys.stdout.reconfigure(encoding='utf-8')
         except (LookupError, ValueError, OSError):
             pass
 
