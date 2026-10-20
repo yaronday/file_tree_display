@@ -214,7 +214,12 @@ def main() -> None:
 
     filepath = opts.get('filepath')
     if not filepath and not opts.get('no_save'):
-        filepath = str(root_dir.with_name(f'{root_dir.name}{DEFAULT_SFX}'))
+        if root_dir.name:
+            filepath = str(root_dir.with_name(f'{root_dir.name}{DEFAULT_SFX}'))
+        else:
+            # Handle drive roots like 'c:/' where name is ''
+            drive_letter = root_dir.drive.rstrip(':')
+            filepath = str(root_dir / f'{drive_letter}{DEFAULT_SFX}')
 
     ftd = FileTreeDisplay(
         root_dir=str(root_dir),
