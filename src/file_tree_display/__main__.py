@@ -21,10 +21,12 @@ class FileTreeCLI:
 
     def __init__(self) -> None:
         self.parser = argparse.ArgumentParser(
+            prog = 'ftd',
             description=(
                 'file-tree-display - A utility for generating a visually structured directory tree.\n'
             ),
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            usage='%(prog)s [options]'
         )
         self._add_arguments()
         self.defaults = None
