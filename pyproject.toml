@@ -29,7 +29,7 @@ default-groups = ["dev", "test"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-addopts = "--cov=nano_dev_utils --cov-report=term-missing"
+addopts = "--cov=file_tree_display --cov-report=term-missing"
 
 [tool.coverage.report]
 show_missing = true
