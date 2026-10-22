@@ -253,5 +253,5 @@ def ensure_utf8_stdout() -> None:
             pass
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

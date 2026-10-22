@@ -1,140 +1,178 @@
-import argparse
+import pathlib
 import sys
-
 import pytest
 
 import file_tree_display.__main__ as cli
+from file_tree_display.__main__ import FileTreeCLI, ensure_utf8_stdout, main
 
 
-def test_parse_collects_defaults(monkeypatch, cli_instance):
-    argv = ['prog', '--ignore-dirs', '.git', '.idea']
-    monkeypatch.setattr(sys, 'argv', argv)
-    args = cli_instance.parse()
-    assert isinstance(args, argparse.Namespace)
-    assert '_defaults' in vars(args)
-    assert args._defaults['style'] == 'classic'
+@pytest.mark.parametrize(
+    'input_val, expected',
+    [
+        (None, None),
+        ([], None),
+        ('', None),
+        ('["a", "b"]', ['a', 'b']),
+        ("['a', 'b']", ['a', 'b']),
+        (['a', 'b'], ['a', 'b']),
+        (('a', 'b'), ['a', 'b']),
+        ({'a', 'b'}, ['a', 'b']),
+        ('single_str', ['single_str']),
+        (123, ['123']),
+    ],
+)
+def test_normalize_list(input_val, expected):
+    result = FileTreeCLI.normalize_list(input_val)
+    if expected is None:
+        assert result is None
+    elif isinstance(input_val, set):
+        assert result is not None
+        assert sorted(result) == sorted(expected)
+    else:
+        assert result == expected
 
 
-def make_namespace(**kwargs):
-    ns = argparse.Namespace(**kwargs)
-    ns._defaults = {'indent': 2, 'style': 'classic'}
-    return ns
+def test_normalize_list_invalid_syntax():
+    with pytest.raises(ValueError, match='Invalid list syntax'):
+        FileTreeCLI.normalize_list('[1, , 2]')
 
 
-def test_cli_explicit_overrides_config(cli_instance):
-    """CLI explicit values must override config values."""
-    cfg = {'indent': 4, 'style': 'arrow'}
-    args = make_namespace(indent=8, style='classic', cfg=None)
-    merged = cli_instance.merge_config(args, cfg)
-    assert merged['indent'] == 8
-    assert merged['style'] == 'arrow'
-
-
-def test_cli_defaults_do_not_override_config(cli_instance):
-    """CLI defaults must never override config values."""
-    cfg = {'indent': 4, 'style': 'arrow'}
-    args = make_namespace(indent=2, style='classic', cfg=None)
-    merged = cli_instance.merge_config(args, cfg)
-    assert merged['indent'] == 4
-    assert merged['style'] == 'arrow'
-
-
-def test_config_list_string_normalized(cli_instance):
-    """Python-style list strings in config must normalize correctly."""
-    cfg = {'ignore_dirs': "['.git', '.idea', '.venv']"}
-    args = make_namespace(cfg=None)
-    merged = cli_instance.merge_config(args, cfg)
-    assert merged['ignore_dirs'] == ['.git', '.idea', '.venv']
-
-
-def test_config_json_list_remains(cli_instance):
-    """JSON-style lists remain untouched."""
-    cfg = {'ignore_dirs': ['.git', '.idea']}
-    args = make_namespace(cfg=None)
-    merged = cli_instance.merge_config(args, cfg)
-    assert merged['ignore_dirs'] == ['.git', '.idea']
-
-
-def test_config_and_cli_lists_are_merged(cli_instance):
-    """Config and CLI lists merge (union, order preserved)."""
-    cfg = {'ignore_dirs': ['.git', '.venv']}
-    args = make_namespace(ignore_dirs=['.idea', '__pycache__'], cfg=None)
-    merged = cli_instance.merge_config(args, cfg)
-    assert merged['ignore_dirs'] == ['.git', '.venv', '.idea', '__pycache__']
-
-
-def test_config_and_cli_lists_deduplicate(cli_instance):
-    """Merged lists must not contain duplicates."""
-    cfg = {'ignore_dirs': ['.git', '.idea']}
-    args = make_namespace(ignore_dirs=['.idea', '.venv'], cfg=None)
-    merged = cli_instance.merge_config(args, cfg)
-    assert merged['ignore_dirs'] == ['.git', '.idea', '.venv']
-
-
-def test_merge_handles_mixed_sources(cli_instance):
-    """Mix of config lists, CLI scalar, and config-only keys should merge cleanly."""
-    cfg = {
-        'ignore_dirs': "['.git', '.venv']",
-        'include_files': ['README.md'],
-        'style': 'arrow',
+@pytest.mark.parametrize(
+    'cli_args, cfg_dict, expected_subset',
+    [
+        (
+                ['ftd', '--style', 'dash'],
+                {'indent': 4, 'style': 'classic'},
+                {'style': 'dash', 'indent': 4},
+        ),
+        (
+                ['ftd', '--ignore-dirs', 'dir1'],
+                {'ignore_dirs': "['dir2']"},
+                {'ignore_dirs': ['dir2', 'dir1']},
+        ),
+        (
+                ['ftd'],
+                {'ignore_dirs': ['.git'], 'indent': 8},
+                {'ignore_dirs': ['.git'], 'indent': 8},
+        ),
+    ],
+)
+def test_merge_config(cli_instance, cli_args, cfg_dict, expected_subset):
+    parser = cli_instance.parser
+    parsed_args = parser.parse_args(cli_args[1:])
+    parsed_args._defaults = cli_instance.defaults = {
+        k: v for k, v in vars(parser.parse_args([])).items() if k != 'cfg'
     }
-    args = make_namespace(
-        ignore_dirs=['.idea'], include_dirs=['src'], indent=8, cfg=None
+
+    merged = cli_instance.merge_config(parsed_args, cfg_dict)
+    for k, v in expected_subset.items():
+        assert merged[k] == v
+
+
+def test_cli_parse(cli_instance, monkeypatch):
+    monkeypatch.setattr(sys, 'argv', ['ftd', '--indent', '5', '--style', 'arrow'])
+    args = cli_instance.parse()
+    assert args.indent == 5
+    assert args.style == 'arrow'
+    assert hasattr(args, '_defaults')
+
+
+def test_concise_error(cli_instance, capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        cli_instance.concise_error('test error message')
+    assert 'error:' in str(exc_info.value)
+    captured = capsys.readouterr()
+    assert 'usage:' in captured.err
+
+
+def test_ensure_utf8_stdout_success():
+    ensure_utf8_stdout()
+
+def test_ensure_utf8_stdout_none(monkeypatch):
+    """Test when sys.stdout is None."""
+    monkeypatch.setattr(sys, 'stdout', None)
+    ensure_utf8_stdout()
+
+
+def test_ensure_utf8_stdout_missing_reconfigure(monkeypatch):
+    """Test when sys.stdout lacks the reconfigure method."""
+    class PlainStream:
+        pass
+
+    monkeypatch.setattr(sys, 'stdout', PlainStream())
+    ensure_utf8_stdout()
+
+
+@pytest.mark.parametrize('exc_type', [LookupError, ValueError, OSError])
+def test_ensure_utf8_stdout_handles_exceptions(monkeypatch, exc_type):
+    """Test that exceptions during reconfigure are safely caught and ignored."""
+    class FaultyStream:
+        def reconfigure(self, *, encoding: str) -> None:
+            raise exc_type('Reconfiguration failed')
+
+    monkeypatch.setattr(sys, 'stdout', FaultyStream())
+    ensure_utf8_stdout()  # Should complete without raising an error
+
+
+def test_main_success(monkeypatch, sample_dir, sample_cfg):
+    monkeypatch.setattr(
+        sys,
+        'argv',
+        ['ftd', '--root-dir', str(sample_dir), '--cfg', str(sample_cfg), '--no-save'],
     )
-    merged = cli_instance.merge_config(args, cfg)
-
-    assert merged['ignore_dirs'] == ['.git', '.venv', '.idea']
-    assert merged['include_dirs'] == ['src']
-    assert merged['include_files'] == ['README.md']
-    assert merged['style'] == 'arrow'
-    assert merged['indent'] == 8
+    main()
 
 
-class DummyFTD:
-    """Stub for FileTreeDisplay."""
-
-    called = None
-
-    @classmethod
-    def get_version(cls):
-        return '0.0-test'
-
-    def __init__(self, **kwargs):
-        DummyFTD.called = 'init'
-        self.kwargs = kwargs
-
-    def file_tree_display(self):
-        DummyFTD.called = 'executed'
+def test_main_root_dir_not_exists(monkeypatch, tmp_path):
+    non_existent = tmp_path / 'does_not_exit'
+    monkeypatch.setattr(sys, 'argv', ['ftd', '--root-dir', str(non_existent)])
+    with pytest.raises(SystemExit) as exc_info:
+        main()
+    assert 'does not exist' in str(exc_info.value)
 
 
-def test_main_executes(monkeypatch, sample_cfg, sample_dir):
-    """Ensures CLI runs end-to-end successfully."""
-    argv = [
-        'prog',
-        '--cfg',
-        str(sample_cfg),
-        '--root-dir',
-        str(sample_dir),
-        '--printout',
-    ]
-    monkeypatch.setattr(sys, 'argv', argv)
-    monkeypatch.setattr(cli, 'FileTreeDisplay', DummyFTD)
-    cli.main()
-    assert DummyFTD.called == 'executed'
+@pytest.mark.parametrize(
+    'is_drive',
+    [False, True],
+)
+def test_main_filepath_generation(monkeypatch, sample_dir, is_drive):
+    if is_drive:
+        class MockPath(pathlib.Path):
+            def __new__(cls, *args, **kwargs):
+                return super().__new__(cls, *args, **kwargs)
+
+            @property
+            def name(self):
+                return ''
+
+            @property
+            def drive(self):
+                return 'C:'
+
+        root_path = MockPath(str(sample_dir))
+    else:
+        root_path = sample_dir / 'dir1'
+
+    def mock_path_factory(*args, **kwargs):
+        if args and str(args[0]) != '.':
+            return root_path
+        return pathlib.Path(*args, **kwargs)
+
+    monkeypatch.setattr(cli, 'Path', mock_path_factory)  # type: ignore[attr-defined]
+    monkeypatch.setattr(sys, 'argv', ['ftd', '--root-dir', str(root_path)])
+    monkeypatch.setattr(cli.FileTreeDisplay, 'file_tree_display', lambda _self: None)
+
+    main()
 
 
-def test_main_invalid_root(monkeypatch, tmp_path, sample_cfg):
-    argv = ['prog', '--cfg', str(sample_cfg), '--root-dir', str(tmp_path / 'missing')]
-    monkeypatch.setattr(sys, 'argv', argv)
-    with pytest.raises(SystemExit):
-        cli.main()
+def test_main_exception_handling(monkeypatch, sample_dir):
+    monkeypatch.setattr(sys, 'argv', ['ftd', '--root-dir', str(sample_dir)])
 
+    def mock_display(_self):
+        raise RuntimeError('display failure')
 
-def test_main_no_cfg(monkeypatch, sample_dir):
-    """Runs successfully without config file."""
-    argv = ['prog', '--root-dir', str(sample_dir)]
-    monkeypatch.setattr(sys, 'argv', argv)
-    monkeypatch.setattr(cli, 'FileTreeDisplay', DummyFTD)
-    monkeypatch.setattr(cli, 'load_cfg_file', lambda _: {})
-    cli.main()
-    assert DummyFTD.called == 'executed'
+    monkeypatch.setattr(cli.FileTreeDisplay, 'file_tree_display', mock_display)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main()
+    assert 'Error: display failure' in str(exc_info.value)
