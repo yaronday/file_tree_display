@@ -55,10 +55,10 @@ def test_lex_key(input_str, expected):
             'Scanned 0 subfolders and 1 files.',
         ),
         (
-            f'Root_dir{FOLDER_MARKER}\n dir1{FOLDER_MARKER} \n file_a.txt\n file_b.txt',
+            f'Root_dir{FOLDER_MARKER}\n file_a.txt\n dir1{FOLDER_MARKER} \n file_b.txt\n file_c.txt',
             1,
-            2,
-            'Scanned 1 subfolders and 2 files.',
+            3,
+            'Scanned 1 subfolders and 3 files.',
         ),
     ],
 )
