@@ -1,14 +1,16 @@
 from collections.abc import Generator
+from importlib.metadata import PackageNotFoundError
 from pathlib import Path
 from unittest import mock
-from importlib.metadata import PackageNotFoundError
+
 import pytest
 from pytest import MonkeyPatch
 
-from file_tree_display.ftd import FileTreeDisplay
 import file_tree_display.ftd as ftd_module
+from file_tree_display.ftd import FileTreeDisplay
 
-_FOLDER_MARKER = getattr(ftd_module, '_FOLDER_MARKER')  # type: ignore[attr-defined]
+FOLDER_MARKER = '/'
+
 
 def test_get_version_success(monkeypatch):
     """Test get_version returns the package version when installed."""
@@ -47,22 +49,22 @@ def test_lex_key(input_str, expected):
     'tree_info, expected_subfolders, expected_files, expected_print',
     [
         (
-            f'Root_dir{_FOLDER_MARKER}\n file_a.txt',
+            f'Root_dir{FOLDER_MARKER}\n file_a.txt',
             0,
             1,
             'Scanned 0 subfolders and 1 files.',
         ),
         (
-            f'Root_dir{_FOLDER_MARKER}\n dir1{_FOLDER_MARKER} \n file_a.txt\n file_b.txt',
+            f'Root_dir{FOLDER_MARKER}\n dir1{FOLDER_MARKER} \n file_a.txt\n file_b.txt',
             1,
             2,
             'Scanned 1 subfolders and 2 files.',
         ),
     ],
 )
-
-
-def test_get_num_of_entries(tree_info, expected_subfolders, expected_files, expected_print, capsys):
+def test_get_num_of_entries(
+    tree_info, expected_subfolders, expected_files, expected_print, capsys
+):
     """Test entry counting logic, tuple return values, and stdout print output."""
     subfolders, files = FileTreeDisplay.get_num_of_entries(tree_info)
 
@@ -385,6 +387,7 @@ def test_dummy_ftd_entry_count_trigger(tmp_path):
     # Verify the spy flag was triggered
     assert dummy.called_get_num_entries is True
     assert dummy.called_get_tree_info is True
+
 
 def test_stream_output_prints_and_returns_empty(capsys):
     iterator = iter(['a', 'b', 'c'])
