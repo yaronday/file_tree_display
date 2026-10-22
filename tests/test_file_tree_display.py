@@ -20,6 +20,7 @@ def test_basic_structure_generation(ftd_mock: FileTreeDisplay) -> None:
             dir_filter=ftd_mock.dir_filter,
             file_filter=ftd_mock.file_filter,
             reverse=ftd_mock.reverse,
+            include_dirs=ftd_mock.include_dirs,
         )
     )
     assert any('dir1' in line for line in lines)
@@ -40,6 +41,7 @@ def test_ignore_specific_dir(ftd_mock: FileTreeDisplay, sample_dir: Path) -> Non
             dir_filter=ftd_mock.dir_filter,
             file_filter=ftd_mock.file_filter,
             reverse=ftd_mock.reverse,
+            include_dirs=ftd_mock.include_dirs,
         )
     )
     assert 'ignored_dir' not in tree
@@ -59,6 +61,7 @@ def test_ignore_specific_file(ftd_mock: FileTreeDisplay, sample_dir: Path) -> No
             dir_filter=ftd_mock.dir_filter,
             file_filter=ftd_mock.file_filter,
             reverse=ftd_mock.reverse,
+            include_dirs=ftd_mock.include_dirs,
         )
     )
     assert 'ignored_file.txt' not in tree
@@ -90,6 +93,7 @@ def test_style_and_indent_applied(ftd_mock: FileTreeDisplay) -> None:
             dir_filter=ftd_mock.dir_filter,
             file_filter=ftd_mock.file_filter,
             reverse=ftd_mock.reverse,
+            include_dirs=ftd_mock.include_dirs,
         )
     )
     assert all(
@@ -143,6 +147,7 @@ def test_build_tree_permission_error(ftd_mock: FileTreeDisplay) -> None:
                 dir_filter=ftd_mock.dir_filter,
                 file_filter=ftd_mock.file_filter,
                 reverse=ftd_mock.reverse,
+                include_dirs=ftd_mock.include_dirs,
             )
         )
         assert any('[Permission Denied]' in line for line in results)
@@ -161,6 +166,7 @@ def test_build_tree_os_error(ftd_mock: FileTreeDisplay) -> None:
                 dir_filter=ftd_mock.dir_filter,
                 file_filter=ftd_mock.file_filter,
                 reverse=ftd_mock.reverse,
+                include_dirs=ftd_mock.include_dirs,
             )
         )
         assert any('[Error reading directory]' in line for line in results)

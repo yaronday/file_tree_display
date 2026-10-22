@@ -197,6 +197,7 @@ class FileTreeDisplay:
         sort_key = None if self.skip_sorting else self._resolve_sort_key()
         dir_filter, file_filter = self.dir_filter, self.file_filter
         files_first, reverse = self.files_first, self.reverse
+        include_dirs = self.include_dirs
 
         iterator = self._build_tree(
             root_path_str,
@@ -207,6 +208,7 @@ class FileTreeDisplay:
             dir_filter=dir_filter,
             file_filter=file_filter,
             reverse=reverse,
+            include_dirs=include_dirs,
             is_root=True,
         )
 
@@ -259,6 +261,7 @@ class FileTreeDisplay:
         dir_filter: Callable[[str], bool],
         file_filter: Callable[[str], bool],
         reverse: bool,
+        include_dirs: set[str],
         is_root: bool = False,
     ) -> Generator[str, None, None]:
         """Yields formatted lines representing the directory tree rooted at dir_path using a recursive DFS.
@@ -281,6 +284,8 @@ class FileTreeDisplay:
                 Predicate determining whether a file name should be included.
             reverse (bool):
                 Whether sorting should be in reverse order when sorting is enabled.
+            include_dirs set[str]:
+                A collection of directory names or patterns to include.
         Yields:
             str: A formatted text representation of the folder structure.
         """
@@ -310,11 +315,11 @@ class FileTreeDisplay:
                         if matched:
                             append_dir((name, entry.path))
                             child_dir_filter = (
-                                (lambda n: True) if self.include_dirs else dir_filter
+                                (lambda n: True) if include_dirs else dir_filter
                             )
                     else:
                         # Skip root-level files if inclusion filters are active
-                        if self.include_dirs and is_root:
+                        if include_dirs and is_root:
                             continue
                         if file_filter(name):
                             append_file(name)
@@ -360,9 +365,10 @@ class FileTreeDisplay:
                     files_first=files_first,
                     dir_filter=child_dir_filter,  # type: ignore[reportPossiblyUnboundVariable]
                     file_filter=(lambda n: True)
-                    if self.include_dirs
+                    if include_dirs
                     else file_filter,  # Allow files inside target too
                     reverse=reverse,
+                    include_dirs=include_dirs,
                     is_root=False,  #  sub-dirs are never root
                 )
 
