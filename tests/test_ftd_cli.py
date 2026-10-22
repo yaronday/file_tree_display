@@ -1,5 +1,6 @@
 import pathlib
 import sys
+
 import pytest
 
 import file_tree_display.__main__ as cli
@@ -41,19 +42,19 @@ def test_normalize_list_invalid_syntax():
     'cli_args, cfg_dict, expected_subset',
     [
         (
-                ['ftd', '--style', 'dash'],
-                {'indent': 4, 'style': 'classic'},
-                {'style': 'dash', 'indent': 4},
+            ['ftd', '--style', 'dash'],
+            {'indent': 4, 'style': 'classic'},
+            {'style': 'dash', 'indent': 4},
         ),
         (
-                ['ftd', '--ignore-dirs', 'dir1'],
-                {'ignore_dirs': "['dir2']"},
-                {'ignore_dirs': ['dir2', 'dir1']},
+            ['ftd', '--ignore-dirs', 'dir1'],
+            {'ignore_dirs': "['dir2']"},
+            {'ignore_dirs': ['dir2', 'dir1']},
         ),
         (
-                ['ftd'],
-                {'ignore_dirs': ['.git'], 'indent': 8},
-                {'ignore_dirs': ['.git'], 'indent': 8},
+            ['ftd'],
+            {'ignore_dirs': ['.git'], 'indent': 8},
+            {'ignore_dirs': ['.git'], 'indent': 8},
         ),
     ],
 )
@@ -88,6 +89,7 @@ def test_concise_error(cli_instance, capsys):
 def test_ensure_utf8_stdout_success():
     ensure_utf8_stdout()
 
+
 def test_ensure_utf8_stdout_none(monkeypatch):
     """Test when sys.stdout is None."""
     monkeypatch.setattr(sys, 'stdout', None)
@@ -96,6 +98,7 @@ def test_ensure_utf8_stdout_none(monkeypatch):
 
 def test_ensure_utf8_stdout_missing_reconfigure(monkeypatch):
     """Test when sys.stdout lacks the reconfigure method."""
+
     class PlainStream:
         pass
 
@@ -106,6 +109,7 @@ def test_ensure_utf8_stdout_missing_reconfigure(monkeypatch):
 @pytest.mark.parametrize('exc_type', [LookupError, ValueError, OSError])
 def test_ensure_utf8_stdout_handles_exceptions(monkeypatch, exc_type):
     """Test that exceptions during reconfigure are safely caught and ignored."""
+
     class FaultyStream:
         def reconfigure(self, *, encoding: str) -> None:
             raise exc_type('Reconfiguration failed')
@@ -137,6 +141,7 @@ def test_main_root_dir_not_exists(monkeypatch, tmp_path):
 )
 def test_main_filepath_generation(monkeypatch, sample_dir, is_drive):
     if is_drive:
+
         class MockPath(pathlib.Path):
             def __new__(cls, *args, **kwargs):
                 return super().__new__(cls, *args, **kwargs)
