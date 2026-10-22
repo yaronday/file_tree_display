@@ -2,11 +2,11 @@
 Copyright (c) 2025 - 2026 Yaron Dayan
 """
 
-from pathlib import Path
 from importlib.metadata import version
+from pathlib import Path
 
-from .ftd import FileTreeDisplay
 from ._constants import PKG_NAME
+from .ftd import FileTreeDisplay
 
 filetree_display = FileTreeDisplay(root_dir=str(Path.cwd()))
 

@@ -1,17 +1,15 @@
 """CLI interface for FileTreeDisplay."""
 
-import sys
-import ast
 import argparse
-
+import ast
+import sys
 from pathlib import Path
-from typing import Any
-
-from .ftd import FileTreeDisplay
-from ._constants import DEFAULT_SFX
+from typing import Any, NoReturn
 
 from nano_dev_utils.common import load_cfg_file
 
+from ._constants import DEFAULT_SFX
+from .ftd import FileTreeDisplay
 
 LIST_KEYS = {'ignore_dirs', 'ignore_files', 'include_dirs', 'include_files'}
 
@@ -21,10 +19,12 @@ class FileTreeCLI:
 
     def __init__(self) -> None:
         self.parser = argparse.ArgumentParser(
+            prog='ftd',
             description=(
                 'file-tree-display - A utility for generating a visually structured directory tree.\n'
             ),
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            usage='%(prog)s [options]',
         )
         self._add_arguments()
         self.defaults = None
@@ -37,22 +37,22 @@ class FileTreeCLI:
         )
         self.parser.add_argument('--filepath', '-o', type=str, help='Output file path.')
         filter_group = self.parser.add_argument_group(
-            "Filtering Options",
+            'Filtering Options',
             description=(
-                "Supporting either space-separated or Python-style list inputs."
+                'Supporting either space-separated or Python-style list inputs.'
             ),
         )
         filter_group.add_argument(
-            "--ignore-dirs", nargs="*", default=None, help="Directories to ignore."
+            '--ignore-dirs', nargs='*', default=None, help='Directories to ignore.'
         )
         filter_group.add_argument(
-            "--ignore-files", nargs="*", default=None, help="Files to ignore."
+            '--ignore-files', nargs='*', default=None, help='Files to ignore.'
         )
         filter_group.add_argument(
-            "--include-dirs", nargs="*", default=None, help="Directories to include."
+            '--include-dirs', nargs='*', default=None, help='Directories to include.'
         )
         filter_group.add_argument(
-            "--include-files", nargs="*", default=None, help="Files to include."
+            '--include-files', nargs='*', default=None, help='Files to include.'
         )
 
         self.parser.add_argument(
@@ -122,7 +122,7 @@ class FileTreeCLI:
             k: v for k, v in vars(self.parser.parse_args([])).items() if k != 'cfg'
         }
         args = self.parser.parse_args()
-        setattr(args, '_defaults', self.defaults)
+        args._defaults = self.defaults
         return args
 
     def merge_config(
@@ -192,13 +192,11 @@ class FileTreeCLI:
             return list(value)
         return [str(value)]
 
-    def concise_error(self, message: str) -> None:
+    def concise_error(self, message: str) -> NoReturn:
         prog = self.parser.prog
-        sys.stderr.write(
-            f"{prog}: error: {message}\n\n"
-            f"Run '{prog} -h' for usage.\n"
-        )
-        sys.exit(2)
+        err_msg = f"{prog}: error: {message}\n\nRun '{prog} -h' for usage.\n"
+        self.parser.print_usage(sys.stderr)
+        sys.exit(f'error: {err_msg}')
 
 
 def main() -> None:
@@ -242,7 +240,7 @@ def main() -> None:
 
     try:
         ftd.file_tree_display()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         sys.exit(f'Error: {e}')
 
 
@@ -250,10 +248,10 @@ def ensure_utf8_stdout() -> None:
     """Best-effort attempt to force UTF-8 stdout on platforms that support it."""
     if sys.stdout is not None and hasattr(sys.stdout, 'reconfigure'):
         try:
-            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stdout.reconfigure(encoding='utf-8')  # type: ignore[reportAttributeAccessIssue]
         except (LookupError, ValueError, OSError):
             pass
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()

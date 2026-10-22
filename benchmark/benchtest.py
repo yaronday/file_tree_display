@@ -1,11 +1,10 @@
 import logging
-
 from pathlib import Path
-from file_tree_display.ftd import FileTreeDisplay
-from nano_dev_utils import timer
 
+from nano_dev_utils import timer
 from win_tree_wrapper import tree_wrapper
 
+from file_tree_display.ftd import FileTreeDisplay
 
 logging.basicConfig(
     filename='Benchmark_FTD.log',

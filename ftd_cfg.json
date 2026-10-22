@@ -1,0 +1,4 @@
+{
+  "ignore_dirs": [".git", ".idea", ".pytest_cache", ".venv", "dist", "__pycache__"],
+  "printout": true
+}

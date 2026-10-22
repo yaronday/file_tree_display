@@ -155,6 +155,8 @@ cython_debug/
 /src/*/debug.py
 /src/*/*.log
 
-# update_package.py
-
 *_bkp.py
+
+tasks/
+
+.DS_Store

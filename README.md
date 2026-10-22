@@ -2,6 +2,11 @@
 
 A utility for generating a visually structured directory tree.
 
+[![PYPI Version](https://shields.io/pypi/v/file-tree-display)](https://pypi.org/project/file-tree-display) 
+[![Coverage Status](https://img.shields.io/badge/coverage-97%25-brightgreen.svg)](coverage.md) 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+
 ## Modules
 
 ## `file_tree_display.py`
@@ -47,7 +52,6 @@ Constructs and manages the visual representation of a folder structure of a path
 | `sort_key_name` | `str`                           | Sort key func name. Natural, Lexicographic or custom. Defaults to 'natural'. |
 | `reverse`       | `bool`                          | Reversed sorting order.                                                      |
 | `custom_sort`   | `Callable[[str], Any] / None`   | Custom sort key function.                                                    |
-| `title`         | `str`                           | Custom title shown in the output.                                            |
 | `save2file`     | `bool`                          | Save file tree (folder structure) info into a file.                          |
 | `stream_output` | `bool`                          | Stream print tree content without building a buffer.                         |
 | `printout`      | `bool`                          | Print the generated tree to stdout.                                          |
@@ -148,6 +152,7 @@ This displays the tree structure of the `src` directory using the *arrow* connec
 
 | Option            | Alias     | Type   | Description                                                | Default   |
 |-------------------|-----------|--------|------------------------------------------------------------|-----------|
+| `--help`          | `-h`      | `str`  | show this help message and exit.                           |  –        |
 | `--cfg`           | –         | `str`  | Path to a JSON configuration file.                         | –         |
 | `--root-dir`      | `-r`      | `str`  | Root directory to display.                                 | –         |
 | `--filepath`      | `-o`      | `str`  | Output file path for exported tree.                        | –         |
@@ -269,7 +274,3 @@ Scanned 4 subfolders and 24 files.
 ---
 
 ***
-
-## License
-This project is licensed under the MIT License. 
-See [LICENSE](https://github.com/yaronday/file_tree_display/blob/master/LICENSE) for details.

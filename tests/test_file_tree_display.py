@@ -1,12 +1,78 @@
-import pytest
-
+from collections.abc import Generator
+from importlib.metadata import PackageNotFoundError
 from pathlib import Path
 from unittest import mock
+
+import pytest
 from pytest import MonkeyPatch
 
+import file_tree_display.ftd as ftd_module
 from file_tree_display.ftd import FileTreeDisplay
 
-from typing import Generator
+FOLDER_MARKER = '/'
+
+
+def test_get_version_success(monkeypatch):
+    """Test get_version returns the package version when installed."""
+    monkeypatch.setattr(ftd_module, 'version', lambda name: '1.2.3')  # type: ignore[attr-defined]
+
+    assert FileTreeDisplay.get_version() == '1.2.3'
+
+
+def test_get_version_not_found(monkeypatch):
+    """Test get_version falls back to 'unknown' when PackageNotFoundError is raised."""
+
+    def mock_version(name):
+        raise PackageNotFoundError(name)
+
+    monkeypatch.setattr(ftd_module, 'version', mock_version)  # type: ignore[attr-defined]
+
+    assert FileTreeDisplay.get_version() == 'unknown'
+
+
+@pytest.mark.parametrize(
+    'input_str, expected',
+    [
+        ('TestFile.txt', 'testfile.txt'),
+        ('UPPERCASE', 'uppercase'),
+        ('lowercase', 'lowercase'),
+        ('MixedCase123!', 'mixedcase123!'),
+        ('', ''),
+    ],
+)
+def test_lex_key(input_str, expected):
+    """Test lexicographic sorting key conversion to lowercase."""
+    assert FileTreeDisplay._lex_key(input_str) == expected
+
+
+@pytest.mark.parametrize(
+    'tree_info, expected_subfolders, expected_files, expected_print',
+    [
+        (
+            f'Root_dir{FOLDER_MARKER}\n file_a.txt',
+            0,
+            1,
+            'Scanned 0 subfolders and 1 files.',
+        ),
+        (
+            f'Root_dir{FOLDER_MARKER}\n file_a.txt\n dir1{FOLDER_MARKER} \n file_b.txt\n file_c.txt',
+            1,
+            3,
+            'Scanned 1 subfolders and 3 files.',
+        ),
+    ],
+)
+def test_get_num_of_entries(
+    tree_info, expected_subfolders, expected_files, expected_print, capsys
+):
+    """Test entry counting logic, tuple return values, and stdout print output."""
+    subfolders, files = FileTreeDisplay.get_num_of_entries(tree_info)
+
+    assert subfolders == expected_subfolders
+    assert files == expected_files
+
+    captured = capsys.readouterr()
+    assert expected_print in captured.out
 
 
 def test_basic_structure_generation(ftd_mock: FileTreeDisplay) -> None:
@@ -21,6 +87,7 @@ def test_basic_structure_generation(ftd_mock: FileTreeDisplay) -> None:
             dir_filter=ftd_mock.dir_filter,
             file_filter=ftd_mock.file_filter,
             reverse=ftd_mock.reverse,
+            include_dirs=ftd_mock.include_dirs,
         )
     )
     assert any('dir1' in line for line in lines)
@@ -41,6 +108,7 @@ def test_ignore_specific_dir(ftd_mock: FileTreeDisplay, sample_dir: Path) -> Non
             dir_filter=ftd_mock.dir_filter,
             file_filter=ftd_mock.file_filter,
             reverse=ftd_mock.reverse,
+            include_dirs=ftd_mock.include_dirs,
         )
     )
     assert 'ignored_dir' not in tree
@@ -60,6 +128,7 @@ def test_ignore_specific_file(ftd_mock: FileTreeDisplay, sample_dir: Path) -> No
             dir_filter=ftd_mock.dir_filter,
             file_filter=ftd_mock.file_filter,
             reverse=ftd_mock.reverse,
+            include_dirs=ftd_mock.include_dirs,
         )
     )
     assert 'ignored_file.txt' not in tree
@@ -91,12 +160,11 @@ def test_style_and_indent_applied(ftd_mock: FileTreeDisplay) -> None:
             dir_filter=ftd_mock.dir_filter,
             file_filter=ftd_mock.file_filter,
             reverse=ftd_mock.reverse,
+            include_dirs=ftd_mock.include_dirs,
         )
     )
     assert all(
-        line.startswith('├──')
-        for line in lines
-        if not (line.startswith('│') or line.startswith('└──'))
+        line.startswith('├──') for line in lines if not line.startswith(('│', '└──'))
     )
 
 
@@ -146,6 +214,7 @@ def test_build_tree_permission_error(ftd_mock: FileTreeDisplay) -> None:
                 dir_filter=ftd_mock.dir_filter,
                 file_filter=ftd_mock.file_filter,
                 reverse=ftd_mock.reverse,
+                include_dirs=ftd_mock.include_dirs,
             )
         )
         assert any('[Permission Denied]' in line for line in results)
@@ -164,6 +233,7 @@ def test_build_tree_os_error(ftd_mock: FileTreeDisplay) -> None:
                 dir_filter=ftd_mock.dir_filter,
                 file_filter=ftd_mock.file_filter,
                 reverse=ftd_mock.reverse,
+                include_dirs=ftd_mock.include_dirs,
             )
         )
         assert any('[Error reading directory]' in line for line in results)
@@ -266,7 +336,7 @@ class DummyFTD:
         buf = [root_line] + list(iterator)
         return '\n'.join(buf)
 
-    def get_num_of_entries(self, info):
+    def get_num_of_entries(self, _info):
         self.called_get_num_entries = True
 
     def file_tree_display(self):
@@ -297,6 +367,26 @@ class DummyFTD:
             self.get_num_of_entries(info)
 
         return info
+
+
+def test_dummy_ftd_entry_count_trigger(tmp_path):
+    """Test that tree_info_processing correctly calls get_num_of_entries when entry_count is enabled."""
+    root = tmp_path / 'sample_root'
+    root.mkdir()
+
+    # Instantiate DummyFTD with entry_count=True
+    dummy = DummyFTD(
+        root_path=root,
+        iterator=iter(['file1.txt']),
+        entry_count=True,
+    )
+
+    # Run info processing
+    dummy.file_tree_display()
+
+    # Verify the spy flag was triggered
+    assert dummy.called_get_num_entries is True
+    assert dummy.called_get_tree_info is True
 
 
 def test_stream_output_prints_and_returns_empty(capsys):
