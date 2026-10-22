@@ -1,10 +1,10 @@
-import pytest
 import json
-
 from pathlib import Path
-from file_tree_display.ftd import FileTreeDisplay
+
+import pytest
 
 import file_tree_display.__main__ as cli
+from file_tree_display.ftd import FileTreeDisplay
 
 
 @pytest.fixture

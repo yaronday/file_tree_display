@@ -1,14 +1,14 @@
 import io
 import os
 import re
-
-from collections.abc import Generator
+from collections.abc import Callable, Generator, Iterable
+from importlib.metadata import PackageNotFoundError, version
 from itertools import chain
 from pathlib import Path
-from typing import Iterable, Callable, Any
+from typing import Any
 
-from importlib.metadata import version, PackageNotFoundError
-from nano_dev_utils.common import str2file, FilterSet, PredicateBuilder
+from nano_dev_utils.common import FilterSet, PredicateBuilder, str2file
+
 from ._constants import PKG_NAME
 
 _NUM_SPLIT = re.compile(r'(\d+)').split
@@ -25,28 +25,28 @@ class FileTreeDisplay:
     """
 
     __slots__ = (
-        'root_path',
+        'custom_sort',
+        'dir_filter',
+        'entry_count',
+        'file_filter',
         'filepath',
+        'files_first',
         'ignore_dirs',
         'ignore_files',
         'include_dirs',
         'include_files',
-        'style',
         'indent',
-        'files_first',
+        'pb',
+        'printout',
+        'reverse',
+        'root_path',
+        'save2file',
         'skip_sorting',
         'sort_key_name',
-        'reverse',
-        'custom_sort',
-        'save2file',
-        'stream_output',
-        'printout',
-        'style_dict',
         'sort_keys',
-        'pb',
-        'dir_filter',
-        'file_filter',
-        'entry_count',
+        'stream_output',
+        'style',
+        'style_dict',
     )
 
     def __init__(
@@ -120,7 +120,9 @@ class FileTreeDisplay:
         }
 
         self.pb = PredicateBuilder()
-        self.dir_filter = self.pb.build_predicate(self.include_dirs, self.ignore_dirs)
+        self.dir_filter: Callable[[str], bool] = self.pb.build_predicate(
+            self.include_dirs, self.ignore_dirs
+        )
         self.file_filter = self.pb.build_predicate(
             self.include_files, self.ignore_files
         )
@@ -186,7 +188,9 @@ class FileTreeDisplay:
         if not self.root_path.is_dir():
             raise NotADirectoryError(f"The path '{root_path_str}' is not a directory.")
 
-        if not self.stream_output and self.save2file and filepath:  # Permissions check in advance!
+        if (
+            not self.stream_output and self.save2file and filepath
+        ):  # Permissions check in advance!
             str2file('', filepath, 'a')
 
         style = self.format_style()
@@ -203,7 +207,7 @@ class FileTreeDisplay:
             dir_filter=dir_filter,
             file_filter=file_filter,
             reverse=reverse,
-            is_root=True
+            is_root=True,
         )
 
         root_line = f'{self.root_path.name}{_FOLDER_MARKER}'
@@ -242,7 +246,7 @@ class FileTreeDisplay:
         buf.write(f'{root_line}\n')
         buf.writelines(f'{line}\n' for line in iterator)
         out = buf.getvalue()
-        return out[:-1] if out.endswith('\n') else out
+        return out.removesuffix('\n')
 
     def _build_tree(
         self,
@@ -305,8 +309,9 @@ class FileTreeDisplay:
                         matched = dir_filter(name)
                         if matched:
                             append_dir((name, entry.path))
-                            child_dir_filter = (lambda n: True) if self.include_dirs else dir_filter
-
+                            child_dir_filter = (
+                                (lambda n: True) if self.include_dirs else dir_filter
+                            )
                     else:
                         # Skip root-level files if inclusion filters are active
                         if self.include_dirs and is_root:
@@ -326,8 +331,12 @@ class FileTreeDisplay:
             files.sort(key=sort_key, reverse=reverse)
 
         # Compute combined sequence without extra temporary tuples where possible
-        f_iter: Iterable[tuple[str, str | None, bool]] = ((f, None, False) for f in files)
-        d_iter: Iterable[tuple[str, str | None, bool]] = ((d[0], d[1], True) for d in dirs)
+        f_iter: Iterable[tuple[str, str | None, bool]] = (
+            (f, None, False) for f in files
+        )
+        d_iter: Iterable[tuple[str, str | None, bool]] = (
+            (d[0], d[1], True) for d in dirs
+        )
         seq: Iterable[tuple[str, str | None, bool]] = (
             chain(f_iter, d_iter) if files_first else chain(d_iter, f_iter)
         )
@@ -349,10 +358,12 @@ class FileTreeDisplay:
                     style=style,
                     sort_key=sort_key,
                     files_first=files_first,
-                    dir_filter=child_dir_filter,
-                    file_filter=(lambda n: True) if self.include_dirs else file_filter, # Allow files inside target too
+                    dir_filter=child_dir_filter,  # type: ignore[reportPossiblyUnboundVariable]
+                    file_filter=(lambda n: True)
+                    if self.include_dirs
+                    else file_filter,  # Allow files inside target too
                     reverse=reverse,
-                    is_root=False, #  sub-dirs are never root
+                    is_root=False,  #  sub-dirs are never root
                 )
 
     def connector_styler(self, branch: str, end: str) -> dict:

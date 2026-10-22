@@ -1,6 +1,7 @@
-import sys
-import pytest
 import argparse
+import sys
+
+import pytest
 
 import file_tree_display.__main__ as cli
 
@@ -16,7 +17,7 @@ def test_parse_collects_defaults(monkeypatch, cli_instance):
 
 def make_namespace(**kwargs):
     ns = argparse.Namespace(**kwargs)
-    setattr(ns, '_defaults', {'indent': 2, 'style': 'classic'})
+    ns._defaults = {'indent': 2, 'style': 'classic'}
     return ns
 
 

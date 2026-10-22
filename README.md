@@ -269,7 +269,3 @@ Scanned 4 subfolders and 24 files.
 ---
 
 ***
-
-## License
-This project is licensed under the MIT License. 
-See [LICENSE](https://github.com/yaronday/file_tree_display/blob/master/LICENSE) for details.

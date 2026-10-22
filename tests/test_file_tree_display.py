@@ -1,12 +1,11 @@
-import pytest
-
+from collections.abc import Generator
 from pathlib import Path
 from unittest import mock
+
+import pytest
 from pytest import MonkeyPatch
 
 from file_tree_display.ftd import FileTreeDisplay
-
-from typing import Generator
 
 
 def test_basic_structure_generation(ftd_mock: FileTreeDisplay) -> None:
@@ -94,9 +93,7 @@ def test_style_and_indent_applied(ftd_mock: FileTreeDisplay) -> None:
         )
     )
     assert all(
-        line.startswith('├──')
-        for line in lines
-        if not (line.startswith('│') or line.startswith('└──'))
+        line.startswith('├──') for line in lines if not line.startswith(('│', '└──'))
     )
 
 
