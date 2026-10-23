@@ -2,7 +2,7 @@
 
 A utility for generating a visually structured directory tree.
 
-[![PYPI Version](https://shields.io/pypi/v/file-tree-display)](https://pypi.org/project/file-tree-display) 
+[![PyPI - Version](https://img.shields.io/pypi/v/file-tree-display.svg?logo=pypi&label=PyPI&logoColor=gold)](https://pypi.org/project/file-tree-display/)
 [![Coverage Status](https://img.shields.io/badge/coverage-97%25-brightgreen.svg)](coverage.md) 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
