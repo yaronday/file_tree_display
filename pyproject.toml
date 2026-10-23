@@ -34,6 +34,11 @@ addopts = "--cov=file_tree_display --cov-report=term-missing"
 [tool.coverage.report]
 show_missing = true
 
+[tool.coverage.run]
+omit = [
+    "src/file_tree_display/__version__.py"
+]
+
 [project.scripts]
 ftd = "file_tree_display.__main__:main"
 
