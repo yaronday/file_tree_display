@@ -1,11 +1,12 @@
 # file_tree_display
 
-A utility for generating a visually structured directory tree.
+A utility for generating a visually structured directory tree.       
+
+<br>
 
 [![PyPI - Version](https://img.shields.io/pypi/v/file-tree-display.svg?logo=pypi&label=PyPI&logoColor=gold)](https://pypi.org/project/file-tree-display/)
 [![Coverage Status](https://img.shields.io/badge/coverage-97%25-brightgreen.svg)](coverage.md) 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
 
 ## Modules
 
