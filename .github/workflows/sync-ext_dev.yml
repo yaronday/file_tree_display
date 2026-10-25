@@ -1,0 +1,40 @@
+name: Sync Ext_Dev with Master
+
+on:
+  push:
+    branches:
+      - master 
+      
+permissions:
+  contents: write
+   
+concurrency: # prevent Foxtrot merge etc. 
+  group: sync-ext-dev-master
+  cancel-in-progress: false
+  
+jobs:
+  sync-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Configure Git Bot
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync Master into Ext_Dev
+        run: |
+          git fetch origin
+          
+          git checkout ext_dev || git checkout -b ext_dev origin/ext_dev
+          
+          git pull origin ext_dev
+          
+          # Merge master into ext_dev, automatically resolving conflicts by favoring master
+          git merge origin/master --no-ff -X theirs -m 'chore: automated sync ext_dev with master'
+          
+          git push origin ext_dev
